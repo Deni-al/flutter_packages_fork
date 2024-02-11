@@ -810,6 +810,7 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
 - (void)setLooping:(FVPLoopingMessage *)input error:(FlutterError **)error {
   FVPVideoPlayer *player = self.playersByTextureId[@(input.textureId)];
   player.isLooping = input.isLooping;
+  player.allowsExternalPlayback = input.isLooping;
 }
 
 - (void)setVolume:(FVPVolumeMessage *)input error:(FlutterError **)error {
