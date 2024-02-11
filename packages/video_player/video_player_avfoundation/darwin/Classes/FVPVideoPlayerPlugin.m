@@ -98,6 +98,7 @@
 @property(nonatomic, readonly) BOOL disposed;
 @property(nonatomic, readonly) BOOL isPlaying;
 @property(nonatomic) BOOL isLooping;
+@property(nonatomic) BOOL allowExternalPlayback;
 @property(nonatomic, readonly) BOOL isInitialized;
 // The updater that drives callbacks to the engine to indicate that a new frame is ready.
 @property(nonatomic) FVPFrameUpdater *frameUpdater;
@@ -533,6 +534,10 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
   _isLooping = isLooping;
 }
 
+- (void)setAllowExternalPlayback:(BOOL)allowExternalPlayback {
+  _player.allowsExternalPlayback = allowExternalPlayback;
+}
+
 - (void)setVolume:(double)volume {
   _player.volume = (float)((volume < 0.0) ? 0.0 : ((volume > 1.0) ? 1.0 : volume));
 }
@@ -810,7 +815,7 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
 - (void)setLooping:(FVPLoopingMessage *)input error:(FlutterError **)error {
   FVPVideoPlayer *player = self.playersByTextureId[@(input.textureId)];
   player.isLooping = input.isLooping;
-  player.allowsExternalPlayback = input.isLooping;
+  player.allowExternalPlayback = input.isLooping;
 }
 
 - (void)setVolume:(FVPVolumeMessage *)input error:(FlutterError **)error {
