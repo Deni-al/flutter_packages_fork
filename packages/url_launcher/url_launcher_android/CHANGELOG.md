@@ -1,5 +1,12 @@
-## NEXT
+## 6.3.1
 
+* Updates minSdkVersion to 19.
+* Updates minimum supported SDK version to Flutter 3.16/Dart 3.2.
+
+## 6.3.0
+
+* Adds support for `BrowserConfiguration`.
+* Implements `showTitle` functionality for Android Custom Tabs.
 * Updates compileSdk version to 34.
 
 ## 6.2.3
