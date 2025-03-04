@@ -34,13 +34,13 @@ void main() {
       );
       Preview.detached(
         instanceManager: instanceManager,
-        initialTargetRotation: Surface.ROTATION_90,
+        initialTargetRotation: Surface.rotation90,
         resolutionSelector: MockResolutionSelector(),
       );
 
       verifyNever(mockApi.create(argThat(isA<int>()), argThat(isA<int>()),
           argThat(isA<ResolutionSelector>())));
-    });
+    }, skip: 'Flaky test: https://github.com/flutter/flutter/issues/164132');
 
     test('create calls create on the Java side', () async {
       final MockTestPreviewHostApi mockApi = MockTestPreviewHostApi();
@@ -49,7 +49,7 @@ void main() {
       final InstanceManager instanceManager = InstanceManager(
         onWeakReferenceRemoved: (_) {},
       );
-      const int targetRotation = Surface.ROTATION_90;
+      const int targetRotation = Surface.rotation90;
       final MockResolutionSelector mockResolutionSelector =
           MockResolutionSelector();
       const int mockResolutionSelectorId = 24;
@@ -81,7 +81,7 @@ void main() {
       final InstanceManager instanceManager = InstanceManager(
         onWeakReferenceRemoved: (_) {},
       );
-      const int targetRotation = Surface.ROTATION_180;
+      const int targetRotation = Surface.rotation180;
       final Preview preview = Preview.detached(
         instanceManager: instanceManager,
       );
@@ -169,6 +169,20 @@ void main() {
       expect(previewResolutionInfo.height, equals(resolutionHeight));
 
       verify(mockApi.getResolutionInfo(instanceManager.getIdentifier(preview)));
+    });
+
+    test(
+        'surfaceProducerHandlesCropAndRotation makes call to check if Android surface producer automatically corrects camera preview rotation',
+        () async {
+      final MockTestPreviewHostApi mockApi = MockTestPreviewHostApi();
+      TestPreviewHostApi.setup(mockApi);
+      final Preview preview = Preview.detached();
+
+      when(mockApi.surfaceProducerHandlesCropAndRotation()).thenReturn(true);
+
+      expect(await preview.surfaceProducerHandlesCropAndRotation(), true);
+
+      verify(mockApi.surfaceProducerHandlesCropAndRotation());
     });
   });
 }

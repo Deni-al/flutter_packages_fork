@@ -5,9 +5,9 @@
 import 'dart:io' show Directory, File;
 
 import 'package:path/path.dart' as path;
-import 'package:pigeon/ast.dart';
-import 'package:pigeon/dart_generator.dart';
-import 'package:pigeon/generator_tools.dart';
+import 'package:pigeon/src/ast.dart';
+import 'package:pigeon/src/dart/dart_generator.dart';
+import 'package:pigeon/src/generator_tools.dart';
 import 'package:test/test.dart';
 
 const String DEFAULT_PACKAGE_NAME = 'test_package';
@@ -167,7 +167,13 @@ void main() {
     final String code = sink.toString();
     expect(code, contains('class Api'));
     expect(code, contains('Future<int> add(int x, int y)'));
-    expect(code, contains('await __pigeon_channel.send(<Object?>[x, y])'));
+    expect(
+      code,
+      contains(
+        'pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[x, y])',
+      ),
+    );
+    expect(code, contains('await pigeonVar_sendFuture'));
   });
 
   test('flutter multiple args', () {
@@ -246,13 +252,13 @@ void main() {
     expect(
       code,
       contains(
-        'nested?.encode(),',
+        'nested,',
       ),
     );
     expect(
-      code.replaceAll('\n', ' ').replaceAll('  ', ''),
+      code,
       contains(
-        'nested: result[0] != null ? Input.decode(result[0]! as List<Object?>) : null',
+        'nested: result[0] as Input?',
       ),
     );
   });
@@ -295,13 +301,13 @@ void main() {
     expect(
       code,
       contains(
-        'nested.encode(),',
+        'nested,',
       ),
     );
     expect(
-      code.replaceAll('\n', ' ').replaceAll('  ', ''),
+      code,
       contains(
-        'nested: Input.decode(result[0]! as List<Object?>)',
+        'nested: result[0]! as Input',
       ),
     );
   });
@@ -532,8 +538,10 @@ void main() {
       dartPackageName: DEFAULT_PACKAGE_NAME,
     );
     final String code = sink.toString();
-    expect(code, contains('enum1?.index,'));
-    expect(code, contains('? Enum.values[result[0]! as int]'));
+    expect(code, contains('return value == null ? null : Enum.values[value];'));
+    expect(code, contains('writeValue(buffer, value.index);'));
+    expect(code,
+        contains('final EnumClass? arg_enumClass = (args[0] as EnumClass?);'));
     expect(code, contains('EnumClass doSomething(EnumClass enumClass);'));
   });
 
@@ -571,7 +579,11 @@ void main() {
     final String code = sink.toString();
     expect(code, contains('enum Foo {'));
     expect(code, contains('Future<void> bar(Foo? foo) async'));
-    expect(code, contains('__pigeon_channel.send(<Object?>[foo?.index])'));
+    expect(
+      code,
+      contains('pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[foo])'),
+    );
+    expect(code, contains('await pigeonVar_sendFuture'));
   });
 
   test('flutter non-nullable enum argument with enum class', () {
@@ -624,8 +636,9 @@ void main() {
       dartPackageName: DEFAULT_PACKAGE_NAME,
     );
     final String code = sink.toString();
-    expect(code, contains('enum1.index,'));
-    expect(code, contains('enum1: Enum.values[result[0]! as int]'));
+    expect(code, contains('writeValue(buffer, value.index)'));
+    expect(code, contains('return value == null ? null : Enum.values[value];'));
+    expect(code, contains('enum1: result[0]! as Enum,'));
   });
 
   test('host void argument', () {
@@ -661,10 +674,13 @@ void main() {
       dartPackageName: DEFAULT_PACKAGE_NAME,
     );
     final String code = sink.toString();
-    expect(code, matches('__pigeon_channel.send[(]null[)]'));
+    expect(
+      code,
+      matches('pigeonVar_sendFuture = pigeonVar_channel.send[(]null[)]'),
+    );
   });
 
-  test('mock dart handler', () {
+  test('mock Dart handler', () {
     final Root root = Root(apis: <Api>[
       AstHostApi(name: 'Api', dartHostTestHandler: 'ApiMock', methods: <Method>[
         Method(
@@ -950,7 +966,7 @@ void main() {
       dartPackageName: DEFAULT_PACKAGE_NAME,
     );
     final String code = sink.toString();
-    expect(code, matches('__pigeon_channel.send[(]null[)]'));
+    expect(code, matches('pigeonVar_channel.send[(]null[)]'));
   });
 
   Iterable<String> makeIterable(String string) sync* {
@@ -1139,7 +1155,7 @@ void main() {
     expect(
         code,
         contains(
-            'return (__pigeon_replyList[0] as List<Object?>?)!.cast<int?>();'));
+            'return (pigeonVar_replyList[0] as List<Object?>?)!.cast<int?>();'));
   });
 
   test('flutter generics argument non void return', () {
@@ -1214,7 +1230,7 @@ void main() {
     );
     final String code = sink.toString();
     expect(code, contains('Future<int?> doit()'));
-    expect(code, contains('return (__pigeon_replyList[0] as int?);'));
+    expect(code, contains('return (pigeonVar_replyList[0] as int?);'));
   });
 
   test('return nullable collection host', () {
@@ -1249,7 +1265,7 @@ void main() {
     expect(
         code,
         contains(
-            'return (__pigeon_replyList[0] as List<Object?>?)?.cast<int?>();'));
+            'return (pigeonVar_replyList[0] as List<Object?>?)?.cast<int?>();'));
   });
 
   test('return nullable async host', () {
@@ -1280,7 +1296,7 @@ void main() {
     );
     final String code = sink.toString();
     expect(code, contains('Future<int?> doit()'));
-    expect(code, contains('return (__pigeon_replyList[0] as int?);'));
+    expect(code, contains('return (pigeonVar_replyList[0] as int?);'));
   });
 
   test('return nullable flutter', () {
@@ -1600,46 +1616,7 @@ name: foobar
     expect(code, contains('/// ///'));
   });
 
-  test("doesn't create codecs if no custom datatypes", () {
-    final Root root = Root(
-      apis: <Api>[
-        AstFlutterApi(
-          name: 'Api',
-          methods: <Method>[
-            Method(
-              name: 'method',
-              location: ApiLocation.flutter,
-              returnType: const TypeDeclaration.voidDeclaration(),
-              parameters: <Parameter>[
-                Parameter(
-                  name: 'field',
-                  type: const TypeDeclaration(
-                    baseName: 'int',
-                    isNullable: true,
-                  ),
-                ),
-              ],
-            )
-          ],
-        )
-      ],
-      classes: <Class>[],
-      enums: <Enum>[],
-    );
-    final StringBuffer sink = StringBuffer();
-    const DartGenerator generator = DartGenerator();
-    generator.generate(
-      const DartOptions(),
-      root,
-      sink,
-      dartPackageName: DEFAULT_PACKAGE_NAME,
-    );
-    final String code = sink.toString();
-    expect(code, isNot(contains('extends StandardMessageCodec')));
-    expect(code, contains('StandardMessageCodec'));
-  });
-
-  test('creates custom codecs if custom datatypes present', () {
+  test('creates custom codecs', () {
     final Root root = Root(apis: <Api>[
       AstFlutterApi(name: 'Api', methods: <Method>[
         Method(
@@ -1740,24 +1717,29 @@ name: foobar
     );
 
     final String testCode = sink.toString();
-    expect(
-        testCode,
-        contains(
-            'final Enum? arg_anEnum = args[0] == null ? null : Enum.values[args[0]! as int]'));
+    expect(testCode, contains('final Enum? arg_anEnum = (args[0] as Enum?);'));
+    expect(testCode,
+        contains('return value == null ? null : Enum.values[value];'));
+    expect(testCode, contains('writeValue(buffer, value.index);'));
   });
 
   test('connection error contains channel name', () {
-    final Root root = Root(apis: <Api>[
-      AstHostApi(name: 'Api', methods: <Method>[
-        Method(
-          name: 'method',
-          location: ApiLocation.host,
-          parameters: <Parameter>[],
-          returnType:
-              const TypeDeclaration(baseName: 'Output', isNullable: false),
-        )
-      ])
-    ], classes: <Class>[], enums: <Enum>[]);
+    final Root root = Root(
+      apis: <Api>[
+        AstHostApi(name: 'Api', methods: <Method>[
+          Method(
+            name: 'method',
+            location: ApiLocation.host,
+            parameters: <Parameter>[],
+            returnType:
+                const TypeDeclaration(baseName: 'Output', isNullable: false),
+          )
+        ])
+      ],
+      classes: <Class>[],
+      enums: <Enum>[],
+      containsHostApi: true,
+    );
     final StringBuffer sink = StringBuffer();
     const DartGenerator generator = DartGenerator();
     generator.generate(
@@ -1768,7 +1750,7 @@ name: foobar
     );
     final String code = sink.toString();
     expect(
-        code, contains('throw _createConnectionError(__pigeon_channelName);'));
+        code, contains('throw _createConnectionError(pigeonVar_channelName);'));
     expect(
         code,
         contains(
@@ -1806,5 +1788,36 @@ name: foobar
     );
     final String mainCode = mainCodeSink.toString();
     expect(mainCode, contains('List<Object?> wrapResponse('));
+  });
+
+  test('writes custom int codec without custom types', () {
+    final Root root = Root(
+      apis: <Api>[
+        AstHostApi(name: 'Api', methods: <Method>[
+          Method(
+              name: 'doit',
+              location: ApiLocation.host,
+              returnType: const TypeDeclaration(
+                baseName: 'int',
+                isNullable: true,
+              ),
+              parameters: <Parameter>[])
+        ])
+      ],
+      classes: <Class>[],
+      enums: <Enum>[],
+    );
+    final StringBuffer sink = StringBuffer();
+    const DartGenerator generator = DartGenerator();
+    generator.generate(
+      const DartOptions(),
+      root,
+      sink,
+      dartPackageName: DEFAULT_PACKAGE_NAME,
+    );
+    final String code = sink.toString();
+    expect(code, contains('if (value is int) {'));
+    expect(code, contains('buffer.putUint8(4);'));
+    expect(code, contains('buffer.putInt64(value);'));
   });
 }

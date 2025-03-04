@@ -1,3 +1,125 @@
+## 14.8.1
+
+- Secured canPop method for the lack of matches in routerDelegate's configuration.
+ 
+## 14.8.0
+
+- Adds `preload` parameter to `StatefulShellBranchData.$branch`.
+
+## 14.7.2
+
+- Add missing `await` keyword to `onTap` callback in `navigation.md`.
+
+## 14.7.1
+
+- Fixes return type of current state getter on `GoRouter` and `GoRouterDelegate` to be non-nullable.
+
+## 14.7.0
+
+- Adds fragment support to GoRouter, enabling direct specification and automatic handling of fragments in routes.
+
+## 14.6.4
+
+- Rephrases readme.
+
+## 14.6.3
+
+- Updates minimum supported SDK version to Flutter 3.22/Dart 3.4.
+- Updates readme.
+
+## 14.6.2
+
+- Replaces deprecated collection method usage.
+
+## 14.6.1
+
+- Fixed `PopScope`, and `WillPopScop` was not handled properly in the Root routes.
+
+## 14.6.0
+
+- Allows going to a path relatively by prefixing `./`
+
+## 14.5.0
+
+- Adds preload support to StatefulShellRoute, configurable via `preload` parameter on StatefulShellBranch.
+
+## 14.4.1
+
+- Adds `missing_code_block_language_in_doc_comment` lint.
+
+## 14.4.0
+
+- Adds current state getter on `GoRouter` that returns the current `GoRouterState`.
+
+## 14.3.0
+
+- Adds missing implementation for the routerNeglect parameter in GoRouter.
+
+## 14.2.9
+
+- Relaxes route path requirements. Both root and child routes can now start with or without '/'.
+
+## 14.2.8
+
+- Updated custom_stateful_shell_route example to better support swiping in TabView as well as demonstration of the use of PageView.
+
+## 14.2.7
+
+- Fixes issue so that the parseRouteInformationWithContext can handle non-http Uris.
+
+## 14.2.6
+
+- Fixes replace and pushReplacement uri when only one route match in current route match list.
+
+## 14.2.5
+
+- Fixes an issue where android back button pops pages in the wrong order.
+
+## 14.2.4
+
+- Updates minimum supported SDK version to Flutter 3.19/Dart 3.3.
+- Fix GoRouter configuration in `upgrading.md`
+
+## 14.2.3
+
+- Fixes redirect example's signature in `route.dart`.
+
+## 14.2.2
+
+- Adds section for "Stateful nested navigation" to configuration.md.
+
+## 14.2.1
+
+- Makes GoRouterState lookup more robust.
+
+## 14.2.0
+
+- Added proper `redirect` handling for `ShellRoute.$route` and `StatefulShellRoute.$route` for proper redirection handling in case of code generation.
+
+## 14.1.4
+
+- Fixes a URL in `navigation.md`.
+
+## 14.1.3
+
+- Improves the logging of routes when `debugLogDiagnostics` is enabled or `debugKnownRoutes() is called. Explains the position of shell routes in the route tree. Prints the widget name of the routes it is building.
+
+## 14.1.2
+
+- Fixes issue that path parameters are not set when using the `goBranch`.
+
+## 14.1.1
+
+- Fixes correctness of the state provided in the `onExit`.
+
+## 14.1.0
+
+- Adds route redirect to ShellRoutes
+
+## 14.0.2
+
+- Fixes unwanted logs when `hierarchicalLoggingEnabled` was set to `true`.
+
 ## 14.0.1
 
 - Updates the redirection documentation for clarity
@@ -1043,3 +1165,4 @@
 ## 0.1.0
 
 - squatting on the package name (I'm not too proud to admit it)
+

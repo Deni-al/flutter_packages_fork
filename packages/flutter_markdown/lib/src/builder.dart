@@ -174,7 +174,6 @@ class MarkdownBuilder implements md.NodeVisitor {
   final List<_TableElement> _tables = <_TableElement>[];
   final List<_InlineElement> _inlines = <_InlineElement>[];
   final List<GestureRecognizer> _linkHandlers = <GestureRecognizer>[];
-  final ScrollController _preScrollController = ScrollController();
   String? _currentBlockTag;
   String? _lastVisitedTag;
   bool _isInBlockquote = false;
@@ -347,22 +346,27 @@ class MarkdownBuilder implements md.NodeVisitor {
       child = builders[_blocks.last.tag!]!
           .visitText(text, styleSheet.styles[_blocks.last.tag!]);
     } else if (_blocks.last.tag == 'pre') {
-      child = Scrollbar(
-        controller: _preScrollController,
-        child: SingleChildScrollView(
-          controller: _preScrollController,
-          scrollDirection: Axis.horizontal,
-          padding: styleSheet.codeblockPadding,
-          child: _buildRichText(delegate.formatText(styleSheet, text.text)),
-        ),
-      );
+      child = _ScrollControllerBuilder(
+          builder: (BuildContext context, ScrollController preScrollController,
+              Widget? child) {
+            return Scrollbar(
+              controller: preScrollController,
+              child: SingleChildScrollView(
+                controller: preScrollController,
+                scrollDirection: Axis.horizontal,
+                padding: styleSheet.codeblockPadding,
+                child: child,
+              ),
+            );
+          },
+          child: _buildRichText(delegate.formatText(styleSheet, text.text)));
     } else {
       child = _buildRichText(
         TextSpan(
           style: _isInBlockquote
               ? styleSheet.blockquote!.merge(_inlines.last.style)
               : _inlines.last.style,
-          text: _isInBlockquote ? text.text : trimText(text.text),
+          text: trimText(text.text),
           recognizer: _linkHandlers.isNotEmpty ? _linkHandlers.last : null,
         ),
         textAlign: _textAlignForBlockTag(_currentBlockTag),
@@ -383,19 +387,28 @@ class MarkdownBuilder implements md.NodeVisitor {
       _addAnonymousBlockIfNeeded();
 
       final _BlockElement current = _blocks.removeLast();
-      Widget child;
 
-      if (current.children.isNotEmpty) {
-        child = Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: fitContent
-              ? CrossAxisAlignment.start
-              : CrossAxisAlignment.stretch,
-          children: current.children,
-        );
-      } else {
-        child = const SizedBox();
+      Widget defaultChild() {
+        if (current.children.isNotEmpty) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: fitContent
+                ? CrossAxisAlignment.start
+                : CrossAxisAlignment.stretch,
+            children: current.children,
+          );
+        } else {
+          return const SizedBox();
+        }
       }
+
+      Widget child = builders[tag]?.visitElementAfterWithContext(
+            delegate.context,
+            element,
+            styleSheet.styles[tag],
+            _inlines.isNotEmpty ? _inlines.last.style : null,
+          ) ??
+          defaultChild();
 
       if (_isListTag(tag)) {
         assert(_listIndents.isNotEmpty);
@@ -438,12 +451,27 @@ class MarkdownBuilder implements md.NodeVisitor {
           );
         }
       } else if (tag == 'table') {
-        child = Table(
-          defaultColumnWidth: styleSheet.tableColumnWidth!,
-          defaultVerticalAlignment: styleSheet.tableVerticalAlignment,
-          border: styleSheet.tableBorder,
-          children: _tables.removeLast().rows,
-        );
+        if (styleSheet.tableColumnWidth is FixedColumnWidth ||
+            styleSheet.tableColumnWidth is IntrinsicColumnWidth) {
+          child = _ScrollControllerBuilder(
+            builder: (BuildContext context,
+                ScrollController tableScrollController, Widget? child) {
+              return Scrollbar(
+                controller: tableScrollController,
+                thumbVisibility: styleSheet.tableScrollbarThumbVisibility,
+                child: SingleChildScrollView(
+                  controller: tableScrollController,
+                  scrollDirection: Axis.horizontal,
+                  padding: styleSheet.tablePadding,
+                  child: child,
+                ),
+              );
+            },
+            child: _buildTable(),
+          );
+        } else {
+          child = _buildTable();
+        }
       } else if (tag == 'blockquote') {
         _isInBlockquote = false;
         child = DecoratedBox(
@@ -558,6 +586,15 @@ class MarkdownBuilder implements md.NodeVisitor {
     _lastVisitedTag = tag;
   }
 
+  Table _buildTable() {
+    return Table(
+      defaultColumnWidth: styleSheet.tableColumnWidth!,
+      defaultVerticalAlignment: styleSheet.tableVerticalAlignment,
+      border: styleSheet.tableBorder,
+      children: _tables.removeLast().rows,
+    );
+  }
+
   Widget _buildImage(String src, String? title, String? alt) {
     final List<String> parts = src.split('#');
     if (parts.isEmpty) {
@@ -575,7 +612,12 @@ class MarkdownBuilder implements md.NodeVisitor {
       }
     }
 
-    final Uri uri = Uri.parse(path);
+    final Uri? uri = Uri.tryParse(path);
+
+    if (uri == null) {
+      return const SizedBox();
+    }
+
     Widget child;
     if (imageBuilder != null) {
       child = imageBuilder!(uri, title, alt);
@@ -653,7 +695,15 @@ class MarkdownBuilder implements md.NodeVisitor {
         child: DefaultTextStyle(
           style: styleSheet.tableBody!,
           textAlign: textAlign,
-          child: Wrap(children: children as List<Widget>),
+          child: Wrap(
+            alignment: switch (textAlign) {
+              TextAlign.left => WrapAlignment.start,
+              TextAlign.center => WrapAlignment.center,
+              TextAlign.right => WrapAlignment.end,
+              _ => WrapAlignment.start,
+            },
+            children: children as List<Widget>,
+          ),
         ),
       ),
     );
@@ -727,7 +777,7 @@ class MarkdownBuilder implements md.NodeVisitor {
   }
 
   /// Extracts all spans from an inline element and merges them into a single list
-  Iterable<InlineSpan> _getInlineSpans(InlineSpan span) {
+  Iterable<InlineSpan> _getInlineSpansFromSpan(InlineSpan span) {
     // If the span is not a TextSpan or it has no children, return the span
     if (span is! TextSpan || span.children == null) {
       return <InlineSpan>[span];
@@ -751,95 +801,69 @@ class MarkdownBuilder implements md.NodeVisitor {
     return spans;
   }
 
-  /// Merges adjacent [TextSpan] children
+  // Accesses the TextSpan property correctly depending on the widget type.
+  // Returns null if not a valid (text) widget.
+  InlineSpan? _getInlineSpanFromText(Widget widget) => switch (widget) {
+        SelectableText() => widget.textSpan,
+        Text() => widget.textSpan,
+        RichText() => widget.text,
+        _ => null
+      };
+
+  /// Merges adjacent [TextSpan] children.
+  /// Also forces a specific [TextAlign] regardless of merging.
+  /// This is essential for table column alignment, since desired column alignment
+  /// is discovered after the text widgets have been created. This function is the
+  /// last chance to enforce the desired column alignment in the texts.
   List<Widget> _mergeInlineChildren(
     List<Widget> children,
     TextAlign? textAlign,
   ) {
-    // List of merged text spans and widgets
-    final List<Widget> mergedTexts = <Widget>[];
+    // List of text widgets (merged) and non-text widgets (non-merged)
+    final List<Widget> mergedWidgets = <Widget>[];
 
+    bool lastIsText = false;
     for (final Widget child in children) {
-      // If the list is empty, add the current widget to the list
-      if (mergedTexts.isEmpty) {
-        mergedTexts.add(child);
+      final InlineSpan? currentSpan = _getInlineSpanFromText(child);
+      final bool currentIsText = currentSpan != null;
+
+      if (!currentIsText) {
+        // There is no merging to do, so just add and continue
+        mergedWidgets.add(child);
+        lastIsText = false;
         continue;
       }
-
-      // Remove last widget from the list to merge it with the current widget
-      final Widget last = mergedTexts.removeLast();
 
       // Extracted spans from the last and the current widget
       List<InlineSpan> spans = <InlineSpan>[];
 
-      // Extract the text spans from the last widget
-      if (last is SelectableText) {
-        final TextSpan span = last.textSpan!;
-        spans.addAll(_getInlineSpans(span));
-      } else if (last is Text) {
-        final InlineSpan span = last.textSpan!;
-        spans.addAll(_getInlineSpans(span));
-      } else if (last is RichText) {
-        final InlineSpan span = last.text;
-        spans.addAll(_getInlineSpans(span));
-      } else {
-        // If the last widget is not a text widget,
-        // add both the last and the current widget to the list
-        mergedTexts.addAll(<Widget>[last, child]);
-        continue;
+      if (lastIsText) {
+        // Removes last widget from the list for merging and extracts its spans
+        spans.addAll(_getInlineSpansFromSpan(
+            _getInlineSpanFromText(mergedWidgets.removeLast())!));
       }
 
-      // Extract the text spans from the current widget
-      if (child is Text) {
-        final InlineSpan span = child.textSpan!;
-        spans.addAll(_getInlineSpans(span));
-      } else if (child is SelectableText) {
-        final TextSpan span = child.textSpan!;
-        spans.addAll(_getInlineSpans(span));
-      } else if (child is RichText) {
-        final InlineSpan span = child.text;
-        spans.addAll(_getInlineSpans(span));
+      spans.addAll(_getInlineSpansFromSpan(currentSpan));
+      spans = _mergeSimilarTextSpans(spans);
+
+      final Widget mergedWidget;
+
+      if (spans.isEmpty) {
+        // no spans found, just insert the current widget
+        mergedWidget = child;
       } else {
-        // If the current widget is not a text widget,
-        // add both the last and the current widget to the list
-        mergedTexts.addAll(<Widget>[last, child]);
-        continue;
+        final InlineSpan first = spans.first;
+        final TextSpan textSpan = (spans.length == 1 && first is TextSpan)
+            ? first
+            : TextSpan(children: spans);
+        mergedWidget = _buildRichText(textSpan, textAlign: textAlign);
       }
 
-      if (spans.isNotEmpty) {
-        // Merge similar text spans
-        spans = _mergeSimilarTextSpans(spans);
-
-        // Create a new text widget with the merged text spans
-        InlineSpan child;
-        if (spans.length == 1) {
-          child = spans.first;
-        } else {
-          child = TextSpan(children: spans);
-        }
-
-        // Add the new text widget to the list
-        if (selectable) {
-          mergedTexts.add(SelectableText.rich(
-            TextSpan(children: spans),
-            textScaler: styleSheet.textScaler,
-            textAlign: textAlign ?? TextAlign.start,
-            onTap: onTapText,
-          ));
-        } else {
-          mergedTexts.add(Text.rich(
-            child,
-            textScaler: styleSheet.textScaler,
-            textAlign: textAlign ?? TextAlign.start,
-          ));
-        }
-      } else {
-        // If no text spans were found, add the current widget to the list
-        mergedTexts.add(child);
-      }
+      mergedWidgets.add(mergedWidget);
+      lastIsText = true;
     }
 
-    return mergedTexts;
+    return mergedWidgets;
   }
 
   TextAlign _textAlignForBlockTag(String? blockTag) {
@@ -953,27 +977,58 @@ class MarkdownBuilder implements md.NodeVisitor {
     return mergedSpans;
   }
 
-  Widget _buildRichText(TextSpan? text, {TextAlign? textAlign, String? key}) {
+  Widget _buildRichText(TextSpan text, {TextAlign? textAlign, String? key}) {
     //Adding a unique key prevents the problem of using the same link handler for text spans with the same text
     final Key k = key == null ? UniqueKey() : Key(key);
     if (selectable) {
       return SelectableText.rich(
-        text!,
+        text,
         textScaler: styleSheet.textScaler,
         textAlign: textAlign ?? TextAlign.start,
-        onSelectionChanged:
-            (TextSelection selection, SelectionChangedCause? cause) =>
-                onSelectionChanged!(text.text, selection, cause),
+        onSelectionChanged: onSelectionChanged != null
+            ? (TextSelection selection, SelectionChangedCause? cause) =>
+                onSelectionChanged!(text.text, selection, cause)
+            : null,
         onTap: onTapText,
         key: k,
       );
     } else {
       return Text.rich(
-        text!,
+        text,
         textScaler: styleSheet.textScaler,
         textAlign: textAlign ?? TextAlign.start,
         key: k,
       );
     }
+  }
+}
+
+class _ScrollControllerBuilder extends StatefulWidget {
+  const _ScrollControllerBuilder({
+    required this.builder,
+    this.child,
+  });
+
+  final ValueWidgetBuilder<ScrollController> builder;
+
+  final Widget? child;
+
+  @override
+  State<_ScrollControllerBuilder> createState() =>
+      _ScrollControllerBuilderState();
+}
+
+class _ScrollControllerBuilderState extends State<_ScrollControllerBuilder> {
+  final ScrollController _controller = ScrollController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.builder(context, _controller, widget.child);
   }
 }

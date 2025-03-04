@@ -24,12 +24,15 @@ import java.io.File;
 import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.robolectric.RobolectricTestRunner;
 
+@RunWith(RobolectricTestRunner.class)
 public class SystemServicesTest {
   @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 

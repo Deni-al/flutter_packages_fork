@@ -52,7 +52,7 @@ class AndroidGoogleMapsFlutter {
   /// This implementation uses hybrid composition to render the Google Maps
   /// Widget on Android. This comes at the cost of some performance on Android
   /// versions below 10. See
-  /// https://flutter.dev/docs/development/platform-integration/platform-views#performance for more
+  /// https://docs.flutter.dev/platform-integration/android/platform-views#performance for more
   /// information.
   @Deprecated(
       'See https://pub.dev/packages/google_maps_flutter_android#display-mode')
@@ -70,7 +70,7 @@ class AndroidGoogleMapsFlutter {
   /// This implementation uses hybrid composition to render the Google Maps
   /// Widget on Android. This comes at the cost of some performance on Android
   /// versions below 10. See
-  /// https://flutter.dev/docs/development/platform-integration/platform-views#performance for more
+  /// https://docs.flutter.dev/platform-integration/android/platform-views#performance for more
   /// information.
   @Deprecated(
       'See https://pub.dev/packages/google_maps_flutter_android#display-mode')
@@ -87,7 +87,7 @@ class AndroidGoogleMapsFlutter {
 class GoogleMap extends StatefulWidget {
   /// Creates a widget displaying data from Google Maps services.
   ///
-  /// [AssertionError] will be thrown if [initialCameraPosition] is null;
+  /// The map's camera will start centered on [initialCameraPosition].
   const GoogleMap({
     super.key,
     required this.initialCameraPosition,
@@ -110,8 +110,6 @@ class GoogleMap extends StatefulWidget {
     this.myLocationEnabled = false,
     this.myLocationButtonEnabled = true,
     this.layoutDirection,
-
-    /// If no padding is specified default padding will be 0.
     this.padding = EdgeInsets.zero,
     this.indoorViewEnabled = false,
     this.trafficEnabled = false,
@@ -120,6 +118,8 @@ class GoogleMap extends StatefulWidget {
     this.polygons = const <Polygon>{},
     this.polylines = const <Polyline>{},
     this.circles = const <Circle>{},
+    this.clusterManagers = const <ClusterManager>{},
+    this.heatmaps = const <Heatmap>{},
     this.onCameraMoveStarted,
     this.tileOverlays = const <TileOverlay>{},
     this.onCameraMove,
@@ -200,6 +200,8 @@ class GoogleMap extends StatefulWidget {
   final bool fortyFiveDegreeImageryEnabled;
 
   /// Padding to be set on map. See https://developers.google.com/maps/documentation/android-sdk/map#map_padding for more details.
+  ///
+  /// If no padding is specified, the default padding is 0.
   final EdgeInsets padding;
 
   /// Markers to be placed on the map.
@@ -214,8 +216,17 @@ class GoogleMap extends StatefulWidget {
   /// Circles to be placed on the map.
   final Set<Circle> circles;
 
+  /// Heatmaps to show on the map.
+  final Set<Heatmap> heatmaps;
+
   /// Tile overlays to be placed on the map.
   final Set<TileOverlay> tileOverlays;
+
+  /// Cluster Managers to be initialized for the map.
+  ///
+  /// On the web, an extra step is required to enable clusters.
+  /// See https://pub.dev/packages/google_maps_flutter_web.
+  final Set<ClusterManager> clusterManagers;
 
   /// Called when the camera starts moving.
   ///
@@ -252,6 +263,8 @@ class GoogleMap extends StatefulWidget {
   /// chevron if the device is moving.
   /// * The My Location button animates to focus on the user's current location
   /// if the user's location is currently known.
+  ///
+  /// This feature is not present in the Google Maps SDK for the web.
   ///
   /// Enabling this feature requires adding location permissions to both native
   /// platforms of your app.
@@ -328,6 +341,9 @@ class _GoogleMapState extends State<GoogleMap> {
   Map<PolygonId, Polygon> _polygons = <PolygonId, Polygon>{};
   Map<PolylineId, Polyline> _polylines = <PolylineId, Polyline>{};
   Map<CircleId, Circle> _circles = <CircleId, Circle>{};
+  Map<ClusterManagerId, ClusterManager> _clusterManagers =
+      <ClusterManagerId, ClusterManager>{};
+  Map<HeatmapId, Heatmap> _heatmaps = <HeatmapId, Heatmap>{};
   late MapConfiguration _mapConfiguration;
 
   @override
@@ -347,6 +363,8 @@ class _GoogleMapState extends State<GoogleMap> {
         polygons: widget.polygons,
         polylines: widget.polylines,
         circles: widget.circles,
+        clusterManagers: widget.clusterManagers,
+        heatmaps: widget.heatmaps,
       ),
       mapConfiguration: _mapConfiguration,
     );
@@ -356,10 +374,12 @@ class _GoogleMapState extends State<GoogleMap> {
   void initState() {
     super.initState();
     _mapConfiguration = _configurationFromMapWidget(widget);
+    _clusterManagers = keyByClusterManagerId(widget.clusterManagers);
     _markers = keyByMarkerId(widget.markers);
     _polygons = keyByPolygonId(widget.polygons);
     _polylines = keyByPolylineId(widget.polylines);
     _circles = keyByCircleId(widget.circles);
+    _heatmaps = keyByHeatmapId(widget.heatmaps);
   }
 
   @override
@@ -377,10 +397,12 @@ class _GoogleMapState extends State<GoogleMap> {
   void didUpdateWidget(GoogleMap oldWidget) {
     super.didUpdateWidget(oldWidget);
     _updateOptions();
+    _updateClusterManagers();
     _updateMarkers();
     _updatePolygons();
     _updatePolylines();
     _updateCircles();
+    _updateHeatmaps();
     _updateTileOverlays();
   }
 
@@ -402,6 +424,13 @@ class _GoogleMapState extends State<GoogleMap> {
     _markers = keyByMarkerId(widget.markers);
   }
 
+  Future<void> _updateClusterManagers() async {
+    final GoogleMapController controller = await _controller.future;
+    unawaited(controller._updateClusterManagers(ClusterManagerUpdates.from(
+        _clusterManagers.values.toSet(), widget.clusterManagers)));
+    _clusterManagers = keyByClusterManagerId(widget.clusterManagers);
+  }
+
   Future<void> _updatePolygons() async {
     final GoogleMapController controller = await _controller.future;
     unawaited(controller._updatePolygons(
@@ -421,6 +450,16 @@ class _GoogleMapState extends State<GoogleMap> {
     unawaited(controller._updateCircles(
         CircleUpdates.from(_circles.values.toSet(), widget.circles)));
     _circles = keyByCircleId(widget.circles);
+  }
+
+  Future<void> _updateHeatmaps() async {
+    final GoogleMapController controller = await _controller.future;
+    unawaited(
+      controller._updateHeatmaps(
+        HeatmapUpdates.from(_heatmaps.values.toSet(), widget.heatmaps),
+      ),
+    );
+    _heatmaps = keyByHeatmapId(widget.heatmaps);
   }
 
   Future<void> _updateTileOverlays() async {
@@ -543,11 +582,23 @@ class _GoogleMapState extends State<GoogleMap> {
       onLongPress(position);
     }
   }
+
+  void onClusterTap(Cluster cluster) {
+    final ClusterManager? clusterManager =
+        _clusterManagers[cluster.clusterManagerId];
+    if (clusterManager == null) {
+      throw UnknownMapObjectIdError(
+          'clusterManager', cluster.clusterManagerId, 'onClusterTap');
+    }
+    final ArgumentCallback<Cluster>? onClusterTap = clusterManager.onClusterTap;
+    if (onClusterTap != null) {
+      onClusterTap(cluster);
+    }
+  }
 }
 
 /// Builds a [MapConfiguration] from the given [map].
 MapConfiguration _configurationFromMapWidget(GoogleMap map) {
-  assert(!map.liteModeEnabled || Platform.isAndroid);
   return MapConfiguration(
     webGestureHandling: map.webGestureHandling,
     compassEnabled: map.compassEnabled,
