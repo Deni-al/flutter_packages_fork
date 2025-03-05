@@ -264,6 +264,7 @@ static void upgradeAudioSessionCategory(AVAudioSessionCategory requestedCategory
              error:(FlutterError **)error {
   FVPVideoPlayer *player = self.playersByIdentifier[@(playerIdentifier)];
   player.isLooping = isLooping;
+  player.allowExternalPlayback = !isLooping;
 }
 
 - (void)setVolume:(double)volume

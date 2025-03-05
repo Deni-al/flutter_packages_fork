@@ -438,6 +438,10 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
   _isLooping = isLooping;
 }
 
+- (void)setAllowExternalPlayback:(BOOL)allowExternalPlayback {
+    _player.allowsExternalPlayback = allowExternalPlayback;
+}
+
 - (void)setVolume:(double)volume {
   _player.volume = (float)((volume < 0.0) ? 0.0 : ((volume > 1.0) ? 1.0 : volume));
 }

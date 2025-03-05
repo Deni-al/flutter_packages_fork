@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) BOOL isLooping;
 /// The current playback position of the video, in milliseconds.
 @property(nonatomic, readonly) int64_t position;
+/// Indicates whether the video player is allowed to do external payback.
+@property(nonatomic) BOOL allowExternalPlayback;
 
 /// Initializes a new instance of FVPVideoPlayer with the given asset, AV factory, and registrar.
 - (instancetype)initWithAsset:(NSString *)asset
