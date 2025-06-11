@@ -7,15 +7,22 @@ import 'package:in_app_purchase_platform_interface/in_app_purchase_platform_inte
 import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
 
 import 'fakes/fake_storekit_platform.dart';
+import 'sk2_test_api.g.dart';
 import 'test_api.g.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   final FakeStoreKitPlatform fakeStoreKitPlatform = FakeStoreKitPlatform();
+  final FakeStoreKit2Platform fakeStoreKit2Platform = FakeStoreKit2Platform();
 
   setUpAll(() {
     TestInAppPurchaseApi.setUp(fakeStoreKitPlatform);
+    TestInAppPurchase2Api.setUp(fakeStoreKit2Platform);
+  });
+
+  setUp(() {
+    fakeStoreKit2Platform.reset();
   });
 
   group('present code redemption sheet', () {
@@ -35,6 +42,14 @@ void main() {
       expect(receiptData!.source, kIAPSource);
       expect(receiptData.localVerificationData, 'refreshed receipt data');
       expect(receiptData.serverVerificationData, 'refreshed receipt data');
+    });
+  });
+
+  group('showManageSubscriptions', () {
+    test('should complete without error', () async {
+      expect(
+          InAppPurchaseStoreKitPlatformAddition().showManageSubscriptions(),
+          completes);
     });
   });
 }

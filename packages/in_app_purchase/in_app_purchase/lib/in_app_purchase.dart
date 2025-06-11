@@ -18,6 +18,10 @@ export 'package:in_app_purchase_platform_interface/in_app_purchase_platform_inte
         PurchaseStatus,
         PurchaseVerificationData;
 
+// Export iOS-specific functionality
+export 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart'
+    show InAppPurchaseStoreKitPlatformAddition;
+
 /// Basic API for making in app purchases across multiple platforms.
 class InAppPurchase implements InAppPurchasePlatformAdditionProvider {
   InAppPurchase._();

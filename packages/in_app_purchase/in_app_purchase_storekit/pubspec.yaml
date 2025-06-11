@@ -23,7 +23,8 @@ dependencies:
   collection: ^1.15.0
   flutter:
     sdk: flutter
-  in_app_purchase_platform_interface: ^1.4.0
+  in_app_purchase_platform_interface:
+    path: ../in_app_purchase_platform_interface
   json_annotation: ^4.3.0
 
 dev_dependencies:

@@ -23,4 +23,11 @@ final class AppStore {
   Future<void> sync() {
     return _hostApi.sync();
   }
+
+  /// Dart wrapper for StoreKit2's showManageSubscriptions()
+  /// Opens the subscription management sheet for the user.
+  /// https://developer.apple.com/documentation/storekit/appstore/showmanagesubscriptions(in:)
+  Future<void> showManageSubscriptions() {
+    return _hostApi.showManageSubscriptions();
+  }
 }

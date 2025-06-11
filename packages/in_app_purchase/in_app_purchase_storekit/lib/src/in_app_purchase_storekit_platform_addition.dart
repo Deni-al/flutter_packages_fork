@@ -18,6 +18,18 @@ class InAppPurchaseStoreKitPlatformAddition
     return AppStore().sync();
   }
 
+  /// Opens the subscription management sheet for the user.
+  ///
+  /// This shows the subscription management interface where users can manage
+  /// their subscriptions, including canceling, changing plans, and viewing
+  /// billing information.
+  /// 
+  /// StoreKit 2 only, available on iOS 15.0+ and macOS 12.0+.
+  /// See: https://developer.apple.com/documentation/storekit/appstore/showmanagesubscriptions(in:)
+  Future<void> showManageSubscriptions() {
+    return AppStore().showManageSubscriptions();
+  }
+
   /// Present Code Redemption Sheet.
   ///
   /// Available on devices running iOS 14 and iPadOS 14 and later.

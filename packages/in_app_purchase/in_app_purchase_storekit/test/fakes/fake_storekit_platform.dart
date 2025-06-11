@@ -434,6 +434,11 @@ class FakeStoreKit2Platform implements TestInAppPurchase2Api {
 
     return eligibleWinBackOffers[productId]?.contains(offerId) ?? false;
   }
+
+  @override
+  Future<void> showManageSubscriptions() {
+    return Future<void>.value();
+  }
 }
 
 SK2TransactionMessage createPendingTransaction(String id, {int quantity = 1}) {
