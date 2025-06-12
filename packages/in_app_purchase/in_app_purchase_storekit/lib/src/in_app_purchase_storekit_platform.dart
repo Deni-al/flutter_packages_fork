@@ -384,6 +384,33 @@ class InAppPurchaseStoreKitPlatform extends InAppPurchasePlatform {
 
     return eligibility;
   }
+
+  /// Checks if the user is eligible for an intro offer for the subscription product (StoreKit2 only).
+  ///
+  /// Throws [PlatformException] if StoreKit2 is not enabled, if the product is not found,
+  /// if the product is not a subscription, or if any error occurs during the eligibility check.
+  ///
+  /// [PlatformException.code] can be one of:
+  /// - `storekit2_not_enabled`
+  /// - `storekit2_failed_to_fetch_product`
+  /// - `storekit2_not_subscription`
+  /// - `storekit2_intro_offer_eligibility_check_failed`
+  Future<bool> isEligibleForIntroOffer(
+    String productId,
+  ) async {
+    if (!_useStoreKit2) {
+      throw PlatformException(
+        code: 'storekit2_not_enabled',
+        message: 'Intro offer eligibility check requires StoreKit2 which is not enabled.',
+      );
+    }
+
+    final bool eligibility = await AppStore().isEligibleForIntroOffer(
+      productId,
+    );
+
+    return eligibility;
+  }
 }
 
 enum _TransactionRestoreState {

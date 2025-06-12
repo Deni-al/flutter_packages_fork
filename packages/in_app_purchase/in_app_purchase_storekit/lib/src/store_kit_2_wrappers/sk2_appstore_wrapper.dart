@@ -30,4 +30,11 @@ final class AppStore {
   Future<void> showManageSubscriptions() {
     return _hostApi.showManageSubscriptions();
   }
+
+  /// Dart wrapper for StoreKit2's isEligibleForIntroOffer
+  /// Checks if the user is eligible for an intro offer for the subscription product.
+  /// https://developer.apple.com/documentation/storekit/product/subscriptioninfo/iseligibleforintrooffer
+  Future<bool> isEligibleForIntroOffer(String productId) {
+    return _hostApi.isEligibleForIntroOffer(productId);
+  }
 }

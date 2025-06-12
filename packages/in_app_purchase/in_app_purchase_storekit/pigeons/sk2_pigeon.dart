@@ -226,6 +226,9 @@ abstract class InAppPurchase2API {
   bool isWinBackOfferEligible(String productId, String offerId);
 
   @async
+  bool isEligibleForIntroOffer(String productId);
+
+  @async
   List<SK2TransactionMessage> transactions();
 
   @async

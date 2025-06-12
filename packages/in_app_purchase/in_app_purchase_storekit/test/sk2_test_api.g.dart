@@ -127,6 +127,8 @@ abstract class TestInAppPurchase2Api {
 
   Future<bool> isWinBackOfferEligible(String productId, String offerId);
 
+  Future<bool> isEligibleForIntroOffer(String productId, String groupId);
+
   Future<List<SK2TransactionMessage>> transactions();
 
   Future<void> finish(int id);
@@ -234,6 +236,34 @@ abstract class TestInAppPurchase2Api {
               'Argument for dev.flutter.pigeon.in_app_purchase_storekit.InAppPurchase2API.isWinBackOfferEligible was null, expected non-null String.');
           try {
             final bool output = await api.isWinBackOfferEligible(arg_productId!, arg_offerId!);
+            return <Object?>[output];
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          }          catch (e) {
+            return wrapResponse(error: PlatformException(code: 'error', message: e.toString()));
+          }
+        });
+      }
+    }
+    {
+      final BasicMessageChannel<Object?> pigeonVar_channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.in_app_purchase_storekit.InAppPurchase2API.isEligibleForIntroOffer$messageChannelSuffix', pigeonChannelCodec,
+          binaryMessenger: binaryMessenger);
+      if (api == null) {
+        _testBinaryMessengerBinding!.defaultBinaryMessenger.setMockDecodedMessageHandler<Object?>(pigeonVar_channel, null);
+      } else {
+        _testBinaryMessengerBinding!.defaultBinaryMessenger.setMockDecodedMessageHandler<Object?>(pigeonVar_channel, (Object? message) async {
+          assert(message != null,
+          'Argument for dev.flutter.pigeon.in_app_purchase_storekit.InAppPurchase2API.isEligibleForIntroOffer was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final String? arg_productId = (args[0] as String?);
+          assert(arg_productId != null,
+              'Argument for dev.flutter.pigeon.in_app_purchase_storekit.InAppPurchase2API.isEligibleForIntroOffer was null, expected non-null String.');
+          final String? arg_groupId = (args[1] as String?);
+          assert(arg_groupId != null,
+              'Argument for dev.flutter.pigeon.in_app_purchase_storekit.InAppPurchase2API.isEligibleForIntroOffer was null, expected non-null String.');
+          try {
+            final bool output = await api.isEligibleForIntroOffer(arg_productId!, arg_groupId!);
             return <Object?>[output];
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
