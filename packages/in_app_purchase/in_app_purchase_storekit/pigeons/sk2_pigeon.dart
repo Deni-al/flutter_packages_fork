@@ -229,6 +229,9 @@ abstract class InAppPurchase2API {
   bool isEligibleForIntroOffer(String productId);
 
   @async
+  bool willAutoRenew(String productId);
+
+  @async
   List<SK2TransactionMessage> transactions();
 
   @async

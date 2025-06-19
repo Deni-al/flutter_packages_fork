@@ -411,6 +411,33 @@ class InAppPurchaseStoreKitPlatform extends InAppPurchasePlatform {
 
     return eligibility;
   }
+
+  /// Checks if the specified subscription will auto-renew at the end of the current billing period (StoreKit2 only).
+  ///
+  /// Throws [PlatformException] if StoreKit2 is not enabled, if the product is not found,
+  /// if the product is not a subscription, or if any error occurs during the check.
+  ///
+  /// [PlatformException.code] can be one of:
+  /// - `storekit2_not_enabled`
+  /// - `storekit2_failed_to_fetch_product`
+  /// - `storekit2_not_subscription`
+  /// - `storekit2_auto_renew_check_failed`
+  Future<bool> willAutoRenew(
+    String productId,
+  ) async {
+    if (!_useStoreKit2) {
+      throw PlatformException(
+        code: 'storekit2_not_enabled',
+        message: 'Auto-renew check requires StoreKit2 which is not enabled.',
+      );
+    }
+
+    final bool willRenew = await AppStore().willAutoRenew(
+      productId,
+    );
+
+    return willRenew;
+  }
 }
 
 enum _TransactionRestoreState {

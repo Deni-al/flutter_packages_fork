@@ -37,4 +37,10 @@ final class AppStore {
   Future<bool> isEligibleForIntroOffer(String productId) {
     return _hostApi.isEligibleForIntroOffer(productId);
   }
+
+  /// Dart wrapper for StoreKit2's willAutoRenew
+  /// Checks if the specified subscription will auto-renew at the end of the current billing period.
+  Future<bool> willAutoRenew(String productId) {
+    return _hostApi.willAutoRenew(productId);
+  }
 }

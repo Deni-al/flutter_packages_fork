@@ -232,6 +232,85 @@ extension InAppPurchasePlugin: InAppPurchase2API {
     }
   }
 
+  /// Checks if the specified subscription will auto-renew at the end of the current billing period.
+  ///
+  /// - Parameters:
+  ///   - productId: The product ID to check auto-renewal status for.
+  ///   - completion: Returns `Bool` indicating if the subscription will auto-renew, or `Error` on failure.
+  ///
+  /// - Availability: iOS 15.0+, macOS 12.0+.
+  func willAutoRenew(
+    productId: String,
+    completion: @escaping (Result<Bool, Error>) -> Void
+  ) {
+    Task {
+      do {
+        guard let product = try await Product.products(for: [productId]).first else {
+          completion(
+            .failure(
+              PigeonError(
+                code: "storekit2_failed_to_fetch_product",
+                message: "Storekit has failed to fetch this product.",
+                details: "Product ID: \(productId)")))
+          return
+        }
+
+        guard let subscription = product.subscription else {
+          completion(
+            .failure(
+              PigeonError(
+                code: "storekit2_not_subscription",
+                message: "Product is not a subscription",
+                details: "Product ID: \(productId)")))
+          return
+        }
+
+        // Get the subscription status for this subscription group
+        let statuses = try await subscription.status
+        
+        // Check if the subscription will auto-renew
+        var willAutoRenewStatus = false
+        
+        for status in statuses {
+          // Check active subscription states and find the renewal info for this product
+          switch status.state {
+          case .subscribed, .inGracePeriod, .inBillingRetryPeriod:
+            if case .verified(let renewalInfo) = status.renewalInfo {
+              // If this is the currently active product, return its auto-renew status
+              if renewalInfo.currentProductID == productId {
+                willAutoRenewStatus = renewalInfo.willAutoRenew
+                break
+              }
+              // If this product is set to be the next auto-renewal product, it will auto-renew
+              if renewalInfo.willAutoRenew && renewalInfo.autoRenewPreference == productId {
+                willAutoRenewStatus = true
+                break
+              }
+            }
+          default:
+            // For expired, revoked, or other states, check if this was the product
+            if case .verified(let renewalInfo) = status.renewalInfo {
+              if renewalInfo.currentProductID == productId {
+                willAutoRenewStatus = renewalInfo.willAutoRenew
+                break
+              }
+            }
+          }
+        }
+        
+        completion(.success(willAutoRenewStatus))
+
+      } catch {
+        completion(
+          .failure(
+            PigeonError(
+              code: "storekit2_auto_renew_check_failed",
+              message: "Failed to check auto-renewal status: \(error.localizedDescription)",
+              details: "Product ID: \(productId), Error: \(error)")))
+      }
+    }
+  }
+
   /// Wrapper method around StoreKit2's transactions() method
   /// https://developer.apple.com/documentation/storekit/product/3851116-products
   func transactions(

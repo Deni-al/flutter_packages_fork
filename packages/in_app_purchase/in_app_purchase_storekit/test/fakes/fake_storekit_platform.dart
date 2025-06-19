@@ -302,6 +302,7 @@ class FakeStoreKit2Platform implements TestInAppPurchase2Api {
   SK2ProductPurchaseOptionsMessage? lastPurchaseOptions;
   Map<String, Set<String>> eligibleWinBackOffers = <String, Set<String>>{};
   Map<String, Set<String>> eligibleIntroOffers = <String, Set<String>>{};
+  Map<String, bool> autoRenewProducts = <String, bool>{};
 
   void reset() {
     validProductIDs = <String>{'123', '456'};
@@ -320,6 +321,8 @@ class FakeStoreKit2Platform implements TestInAppPurchase2Api {
     }
     eligibleWinBackOffers = <String, Set<String>>{};
     eligibleIntroOffers = <String, Set<String>>{};
+    currentlySelectedProducts = <String, bool>{};
+    autoRenewProducts = <String, bool>{};
   }
 
   SK2TransactionMessage createRestoredTransaction(
@@ -458,6 +461,29 @@ class FakeStoreKit2Platform implements TestInAppPurchase2Api {
     }
 
     return eligibleIntroOffers[productId]?.isNotEmpty ?? false;
+  }
+
+  @override
+  Future<bool> willAutoRenew(
+    String productId,
+  ) async {
+    if (!validProductIDs.contains(productId)) {
+      throw PlatformException(
+        code: 'storekit2_failed_to_fetch_product',
+        message: 'StoreKit failed to fetch product',
+        details: 'Product ID: $productId',
+      );
+    }
+
+    if (validProducts[productId]?.type != SK2ProductType.autoRenewable) {
+      throw PlatformException(
+        code: 'storekit2_not_subscription',
+        message: 'Product is not a subscription',
+        details: 'Product ID: $productId',
+      );
+    }
+
+    return autoRenewProducts[productId] ?? false;
   }
 
   @override
