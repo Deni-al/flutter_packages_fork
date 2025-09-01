@@ -6,7 +6,7 @@ import XCTest
 
 @testable import camera_avfoundation
 
-// Import Objectice-C part of the implementation when SwiftPM is used.
+// Import Objective-C part of the implementation when SwiftPM is used.
 #if canImport(camera_avfoundation_objc)
   import camera_avfoundation_objc
 #endif
@@ -261,8 +261,9 @@ final class CameraPluginDelegatingMethodTests: XCTestCase {
     let expectation = expectation(description: "Call completed")
 
     var startImageStreamCalled = false
-    mockCamera.startImageStreamStub = { _ in
+    mockCamera.startImageStreamStub = { messenger, completion in
       startImageStreamCalled = true
+      completion(nil)
     }
 
     cameraPlugin.startImageStream { error in

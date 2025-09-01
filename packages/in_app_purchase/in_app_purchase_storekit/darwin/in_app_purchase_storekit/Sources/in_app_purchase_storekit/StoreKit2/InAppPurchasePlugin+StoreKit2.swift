@@ -63,6 +63,9 @@ extension InAppPurchasePlugin: InAppPurchase2API {
         {
           purchaseOptions.insert(.appAccountToken(accountTokenUUID))
         }
+        if let quantity = options?.quantity {
+          purchaseOptions.insert(.quantity(Int(quantity)))
+        }
 
         if #available(iOS 17.4, macOS 14.4, *) {
           if let promotionalOffer = options?.promotionalOffer {
@@ -267,10 +270,10 @@ extension InAppPurchasePlugin: InAppPurchase2API {
 
         // Get the subscription status for this subscription group
         let statuses = try await subscription.status
-        
+
         // Check if the subscription will auto-renew
         var willAutoRenewStatus = false
-        
+
         for status in statuses {
           // Check active subscription states and find the renewal info for this product
           switch status.state {
@@ -297,7 +300,7 @@ extension InAppPurchasePlugin: InAppPurchase2API {
             }
           }
         }
-        
+
         completion(.success(willAutoRenewStatus))
 
       } catch {
@@ -306,6 +309,53 @@ extension InAppPurchasePlugin: InAppPurchase2API {
             PigeonError(
               code: "storekit2_auto_renew_check_failed",
               message: "Failed to check auto-renewal status: \(error.localizedDescription)",
+              details: "Product ID: \(productId), Error: \(error)")))
+      }
+    }
+  }
+
+  /// Checks if the user is eligible for an introductory offer.
+  ///
+  /// - Parameters:
+  ///   - productId: The product ID associated with the offer.
+  ///   - completion: Returns `Bool` for eligibility or `Error` on failure.
+  ///
+  /// - Availability: iOS 15.0+, macOS 12.0+
+  func isIntroductoryOfferEligible(
+    productId: String,
+    completion: @escaping (Result<Bool, Error>) -> Void
+  ) {
+    Task {
+      do {
+        guard let product = try await Product.products(for: [productId]).first else {
+          completion(
+            .failure(
+              PigeonError(
+                code: "storekit2_failed_to_fetch_product",
+                message: "Storekit has failed to fetch this product.",
+                details: "Product ID: \(productId)")))
+          return
+        }
+
+        guard let subscription = product.subscription else {
+          completion(
+            .failure(
+              PigeonError(
+                code: "storekit2_not_subscription",
+                message: "Product is not a subscription",
+                details: "Product ID: \(productId)")))
+          return
+        }
+
+        let isEligible = await subscription.isEligibleForIntroOffer
+
+        completion(.success(isEligible))
+      } catch {
+        completion(
+          .failure(
+            PigeonError(
+              code: "storekit2_eligibility_check_failed",
+              message: "Failed to check offer eligibility: \(error.localizedDescription)",
               details: "Product ID: \(productId), Error: \(error)")))
       }
     }
@@ -423,12 +473,12 @@ extension InAppPurchasePlugin: InAppPurchase2API {
           completion(.failure(error))
           return
         }
-        
+
         try await AppStore.showManageSubscriptions(in: windowScene)
         #elseif os(macOS)
         try await AppStore.showManageSubscriptions()
         #endif
-        
+
         completion(.success(()))
         return
       } catch {
