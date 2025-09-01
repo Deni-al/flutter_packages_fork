@@ -5,7 +5,7 @@
 import Flutter
 import ObjectiveC
 
-// Import Objectice-C part of the implementation when SwiftPM is used.
+// Import Objective-C part of the implementation when SwiftPM is used.
 #if canImport(camera_avfoundation_objc)
   import camera_avfoundation_objc
 #endif
@@ -69,7 +69,8 @@ public final class CameraPlugin: NSObject, FlutterPlugin {
 
     super.init()
 
-    FLTDispatchQueueSetSpecific(captureSessionQueue, FLTCaptureSessionQueueSpecific)
+    captureSessionQueue.setSpecific(
+      key: captureSessionQueueSpecificKey, value: captureSessionQueueSpecificValue)
 
     UIDevice.current.beginGeneratingDeviceOrientationNotifications()
     NotificationCenter.default.addObserver(
@@ -103,8 +104,8 @@ public final class CameraPlugin: NSObject, FlutterPlugin {
 
     self.captureSessionQueue.async { [weak self] in
       guard let strongSelf = self else { return }
-      // `FLTCam.setDeviceOrientation` must be called on capture session queue.
-      strongSelf.camera?.setDeviceOrientation(orientation)
+      // `Camera.deviceOrientation` must be set on capture session queue.
+      strongSelf.camera?.deviceOrientation = orientation
       // `CameraPlugin.sendDeviceOrientation` can be called on any queue.
       strongSelf.sendDeviceOrientation(orientation)
     }
@@ -247,12 +248,9 @@ extension CameraPlugin: FCPCameraApi {
       initialCameraName: name
     )
 
-    var error: NSError?
-    let newCamera = DefaultCamera(configuration: camConfiguration, error: &error)
+    do {
+      let newCamera = try DefaultCamera(configuration: camConfiguration)
 
-    if let error = error {
-      completion(nil, CameraPlugin.flutterErrorFromNSError(error))
-    } else {
       camera?.close()
       camera = newCamera
 
@@ -260,6 +258,8 @@ extension CameraPlugin: FCPCameraApi {
         guard let strongSelf = self else { return }
         completion(NSNumber(value: strongSelf.registry.register(newCamera)), nil)
       }
+    } catch let error as NSError {
+      completion(nil, CameraPlugin.flutterErrorFromNSError(error))
     }
   }
 
@@ -309,9 +309,11 @@ extension CameraPlugin: FCPCameraApi {
 
   public func startImageStream(completion: @escaping (FlutterError?) -> Void) {
     captureSessionQueue.async { [weak self] in
-      guard let strongSelf = self else { return }
-      strongSelf.camera?.startImageStream(with: strongSelf.messenger)
-      completion(nil)
+      guard let strongSelf = self else {
+        completion(nil)
+        return
+      }
+      strongSelf.camera?.startImageStream(with: strongSelf.messenger, completion: completion)
     }
   }
 
