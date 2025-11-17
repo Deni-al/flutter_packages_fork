@@ -1,8 +1,9 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "GoogleMapMarkerController.h"
+#import "GoogleMapMarkerController_Test.h"
 
 #import "FGMImageUtils.h"
 #import "FGMMarkerUserData.h"
@@ -24,15 +25,12 @@
 
 - (instancetype)initWithMarker:(GMSMarker *)marker
               markerIdentifier:(NSString *)markerIdentifier
-      clusterManagerIdentifier:(nullable NSString *)clusterManagerIdentifier
                        mapView:(GMSMapView *)mapView {
   self = [super init];
   if (self) {
     _marker = marker;
     _markerIdentifier = [markerIdentifier copy];
-    _clusterManagerIdentifier = [clusterManagerIdentifier copy];
     _mapView = mapView;
-    FGMSetIdentifiersToMarkerUserData(_markerIdentifier, _clusterManagerIdentifier, _marker);
   }
   return self;
 }
@@ -55,78 +53,55 @@
   self.marker.map = nil;
 }
 
-- (void)setAlpha:(float)alpha {
-  self.marker.opacity = alpha;
-}
-
-- (void)setAnchor:(CGPoint)anchor {
-  self.marker.groundAnchor = anchor;
-}
-
-- (void)setDraggable:(BOOL)draggable {
-  self.marker.draggable = draggable;
-}
-
-- (void)setFlat:(BOOL)flat {
-  self.marker.flat = flat;
-}
-
-- (void)setIcon:(UIImage *)icon {
-  self.marker.icon = icon;
-}
-
-- (void)setInfoWindowAnchor:(CGPoint)anchor {
-  self.marker.infoWindowAnchor = anchor;
-}
-
-- (void)setInfoWindowTitle:(NSString *)title snippet:(NSString *)snippet {
-  self.marker.title = title;
-  self.marker.snippet = snippet;
-}
-
-- (void)setPosition:(CLLocationCoordinate2D)position {
-  self.marker.position = position;
-}
-
-- (void)setRotation:(CLLocationDegrees)rotation {
-  self.marker.rotation = rotation;
-}
-
-- (void)setVisible:(BOOL)visible {
-  // If marker belongs the cluster manager, visibility need to be controlled with the opacity
-  // as the cluster manager controls when marker is on the map and when not.
-  // Alpha value for marker must always be interpreted before visibility value.
-  if (self.clusterManagerIdentifier) {
-    self.marker.opacity = visible ? self.marker.opacity : 0.0f;
-  } else {
-    self.marker.map = visible ? self.mapView : nil;
-  }
-}
-
-- (void)setZIndex:(int)zIndex {
-  self.marker.zIndex = zIndex;
-}
-
 - (void)updateFromPlatformMarker:(FGMPlatformMarker *)platformMarker
                        registrar:(NSObject<FlutterPluginRegistrar> *)registrar
                      screenScale:(CGFloat)screenScale {
-  [self setAlpha:platformMarker.alpha];
-  [self setAnchor:FGMGetCGPointForPigeonPoint(platformMarker.anchor)];
-  [self setDraggable:platformMarker.draggable];
+  self.clusterManagerIdentifier = platformMarker.clusterManagerId;
+  self.consumeTapEvents = platformMarker.consumeTapEvents;
+
+  // Set the marker's user data with current identifiers.
+  FGMSetIdentifiersToMarkerUserData(self.markerIdentifier, self.clusterManagerIdentifier,
+                                    self.marker);
+
+  // If marker belongs the cluster manager, visibility need to be controlled with the opacity
+  // as the cluster manager controls when marker is on the map and when not.
+  BOOL useOpacityForVisibility = self.clusterManagerIdentifier != nil;
+  [FLTGoogleMapMarkerController updateMarker:self.marker
+                          fromPlatformMarker:platformMarker
+                                 withMapView:self.mapView
+                                   registrar:registrar
+                                 screenScale:screenScale
+                   usingOpacityForVisibility:useOpacityForVisibility];
+}
+
++ (void)updateMarker:(GMSMarker *)marker
+           fromPlatformMarker:(FGMPlatformMarker *)platformMarker
+                  withMapView:(GMSMapView *)mapView
+                    registrar:(NSObject<FlutterPluginRegistrar> *)registrar
+                  screenScale:(CGFloat)screenScale
+    usingOpacityForVisibility:(BOOL)useOpacityForVisibility {
+  marker.groundAnchor = FGMGetCGPointForPigeonPoint(platformMarker.anchor);
+  marker.draggable = platformMarker.draggable;
   UIImage *image = FGMIconFromBitmap(platformMarker.icon, registrar, screenScale);
-  [self setIcon:image];
-  [self setFlat:platformMarker.flat];
-  [self setConsumeTapEvents:platformMarker.consumeTapEvents];
-  [self setPosition:FGMGetCoordinateForPigeonLatLng(platformMarker.position)];
-  [self setRotation:platformMarker.rotation];
-  [self setZIndex:platformMarker.zIndex];
+  marker.icon = image;
+  marker.flat = platformMarker.flat;
+  marker.position = FGMGetCoordinateForPigeonLatLng(platformMarker.position);
+  marker.rotation = platformMarker.rotation;
+  marker.zIndex = (int)platformMarker.zIndex;
   FGMPlatformInfoWindow *infoWindow = platformMarker.infoWindow;
-  [self setInfoWindowAnchor:FGMGetCGPointForPigeonPoint(infoWindow.anchor)];
+  marker.infoWindowAnchor = FGMGetCGPointForPigeonPoint(infoWindow.anchor);
   if (infoWindow.title) {
-    [self setInfoWindowTitle:infoWindow.title snippet:infoWindow.snippet];
+    marker.title = infoWindow.title;
+    marker.snippet = infoWindow.snippet;
   }
 
-  [self setVisible:platformMarker.visible];
+  // This must be done last, to avoid visual flickers of default property values.
+  if (useOpacityForVisibility) {
+    marker.opacity = platformMarker.visible ? platformMarker.alpha : 0.0f;
+  } else {
+    marker.opacity = platformMarker.alpha;
+    marker.map = platformMarker.visible ? mapView : nil;
+  }
 }
 
 @end
@@ -173,7 +148,6 @@
   FLTGoogleMapMarkerController *controller =
       [[FLTGoogleMapMarkerController alloc] initWithMarker:marker
                                           markerIdentifier:markerIdentifier
-                                  clusterManagerIdentifier:clusterManagerIdentifier
                                                    mapView:self.mapView];
   [controller updateFromPlatformMarker:markerToAdd
                              registrar:self.registrar
@@ -196,20 +170,35 @@
 
 - (void)changeMarker:(FGMPlatformMarker *)markerToChange {
   NSString *markerIdentifier = markerToChange.markerId;
-  NSString *clusterManagerIdentifier = markerToChange.clusterManagerId;
 
   FLTGoogleMapMarkerController *controller = self.markerIdentifierToController[markerIdentifier];
   if (!controller) {
     return;
   }
+
+  NSString *clusterManagerIdentifier = markerToChange.clusterManagerId;
   NSString *previousClusterManagerIdentifier = [controller clusterManagerIdentifier];
-  if (![previousClusterManagerIdentifier isEqualToString:clusterManagerIdentifier]) {
-    [self removeMarker:markerIdentifier];
-    [self addMarker:markerToChange];
-  } else {
-    [controller updateFromPlatformMarker:markerToChange
-                               registrar:self.registrar
-                             screenScale:[self getScreenScale]];
+  [controller updateFromPlatformMarker:markerToChange
+                             registrar:self.registrar
+                           screenScale:[self getScreenScale]];
+
+  if ([controller.marker conformsToProtocol:@protocol(GMUClusterItem)]) {
+    if (previousClusterManagerIdentifier &&
+        ![clusterManagerIdentifier isEqualToString:previousClusterManagerIdentifier]) {
+      // Remove marker from previous cluster manager if its cluster manager identifier is removed or
+      // changed.
+      GMUClusterManager *clusterManager = [_clusterManagersController
+          clusterManagerWithIdentifier:previousClusterManagerIdentifier];
+      [clusterManager removeItem:(id<GMUClusterItem>)controller.marker];
+    }
+
+    if (clusterManagerIdentifier &&
+        ![previousClusterManagerIdentifier isEqualToString:clusterManagerIdentifier]) {
+      // Add marker to cluster manager if its cluster manager identifier has changed.
+      GMUClusterManager *clusterManager =
+          [_clusterManagersController clusterManagerWithIdentifier:clusterManagerIdentifier];
+      [clusterManager addItem:(id<GMUClusterItem>)controller.marker];
+    }
   }
 }
 

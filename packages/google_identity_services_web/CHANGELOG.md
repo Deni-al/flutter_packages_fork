@@ -1,3 +1,11 @@
+## NEXT
+
+* Updates minimum supported SDK version to Flutter 3.32/Dart 3.8.
+
+## 0.3.3+1
+
+* Handles potential exceptions gracefully while fetching `Moment*Reason` for invalid value.
+
 ## 0.3.3
 
 * Moves all the JavaScript types to extend `JSObject`.
