@@ -410,11 +410,9 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
 
 - (void)setLooping:(BOOL)looping error:(FlutterError *_Nullable *_Nonnull)error {
   _isLooping = looping;
-  // Disable external playback when looping
-  _player.allowsExternalPlayback = !looping;
 }
 
-- (void)setAllowExternalPlayback:(BOOL)allowExternalPlayback {
+- (void)setAllowExternalPlayback:(BOOL)allowExternalPlayback error:(FlutterError *_Nullable *_Nonnull)error {
   _player.allowsExternalPlayback = allowExternalPlayback;
 }
 

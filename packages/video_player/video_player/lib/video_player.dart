@@ -735,6 +735,16 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     await _applyPlaybackSpeed();
   }
 
+  /// Sets whether external playback (e.g., AirPlay on iOS) is allowed.
+  ///
+  /// Platforms that don't support external playback will silently ignore this.
+  Future<void> setAllowExternalPlayback(bool allowExternalPlayback) async {
+    if (_isDisposedOrNotInitialized) {
+      return;
+    }
+    await _videoPlayerPlatform.setAllowExternalPlayback(_playerId, allowExternalPlayback);
+  }
+
   /// Sets the caption offset.
   ///
   /// The [offset] will be used when getting the correct caption for a specific position.

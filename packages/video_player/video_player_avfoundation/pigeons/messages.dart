@@ -64,6 +64,8 @@ abstract class VideoPlayerInstanceApi {
   void setVolume(double volume);
   @ObjCSelector('setPlaybackSpeed:')
   void setPlaybackSpeed(double speed);
+  @ObjCSelector('setAllowExternalPlayback:')
+  void setAllowExternalPlayback(bool allowExternalPlayback);
   void play();
   @ObjCSelector('position')
   int getPosition();

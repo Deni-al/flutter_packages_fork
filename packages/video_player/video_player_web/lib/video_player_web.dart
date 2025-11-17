@@ -136,6 +136,11 @@ class VideoPlayerPlugin extends VideoPlayerPlatform {
   }
 
   @override
+  Future<void> setAllowExternalPlayback(int playerId, bool allowExternalPlayback) async {
+    // Web doesn't support external playback, silently ignore
+  }
+
+  @override
   Future<void> seekTo(int playerId, Duration position) async {
     return _player(playerId).seekTo(position);
   }

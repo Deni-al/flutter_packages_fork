@@ -95,6 +95,13 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
     throw UnimplementedError('setPlaybackSpeed() has not been implemented.');
   }
 
+  /// Sets whether external playback (e.g., AirPlay) is allowed.
+  ///
+  /// Platforms that don't support external playback will silently ignore this.
+  Future<void> setAllowExternalPlayback(int playerId, bool allowExternalPlayback) async {
+    // Default implementation: silently ignore for platforms that don't support it
+  }
+
   /// Gets the video position as [Duration] from the start.
   Future<Duration> getPosition(int playerId) {
     throw UnimplementedError('getPosition() has not been implemented.');
