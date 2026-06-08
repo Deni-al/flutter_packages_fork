@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,9 +18,8 @@ CameraImageData cameraImageFromPlatformData(Map<dynamic, dynamic> data) {
     sensorSensitivity: data['sensorSensitivity'] as double?,
     planes: List<CameraImagePlane>.unmodifiable(
       (data['planes'] as List<dynamic>).map<CameraImagePlane>(
-        (dynamic planeData) => _cameraImagePlaneFromPlatformData(
-          planeData as Map<dynamic, dynamic>,
-        ),
+        (dynamic planeData) =>
+            _cameraImagePlaneFromPlatformData(planeData as Map<dynamic, dynamic>),
       ),
     ),
   );

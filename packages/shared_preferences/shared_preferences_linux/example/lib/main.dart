@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,10 +17,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      title: 'SharedPreferences Demo',
-      home: SharedPreferencesDemo(),
-    );
+    return const MaterialApp(title: 'SharedPreferences Demo', home: SharedPreferencesDemo());
   }
 }
 
@@ -32,10 +29,8 @@ class SharedPreferencesDemo extends StatefulWidget {
 }
 
 class SharedPreferencesDemoState extends State<SharedPreferencesDemo> {
-  final SharedPreferencesAsyncPlatform? _prefs =
-      SharedPreferencesAsyncPlatform.instance;
-  final SharedPreferencesLinuxOptions options =
-      const SharedPreferencesLinuxOptions();
+  final SharedPreferencesAsyncPlatform? _prefs = SharedPreferencesAsyncPlatform.instance;
+  final SharedPreferencesLinuxOptions options = const SharedPreferencesLinuxOptions();
   static const String _counterKey = 'counter';
   late Future<int> _counter;
 

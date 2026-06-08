@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,9 +25,8 @@ class ResourceRecordCache {
 
   /// The number of entries in the cache.
   int get entryCount {
-    int count = 0;
-    for (final SplayTreeMap<String, List<ResourceRecord>> map
-        in _cache.values) {
+    var count = 0;
+    for (final SplayTreeMap<String, List<ResourceRecord>> map in _cache.values) {
       for (final List<ResourceRecord> records in map.values) {
         count += records.length;
       }
@@ -40,18 +39,15 @@ class ResourceRecordCache {
     // TODO(karlklose): include flush bit in the record and only flush if
     // necessary.
     // Clear the cache for all name/type combinations to be updated.
-    final Map<int, Set<String>> seenRecordTypes = <int, Set<String>>{};
-    for (final ResourceRecord record in records) {
+    final seenRecordTypes = <int, Set<String>>{};
+    for (final record in records) {
       // TODO(dnfield): Update this to use set literal syntax when we're able to bump the SDK constraint.
       seenRecordTypes[record.resourceRecordType] ??=
           Set<String>(); // ignore: prefer_collection_literals
       if (seenRecordTypes[record.resourceRecordType]!.add(record.name)) {
-        _cache[record.resourceRecordType] ??=
-            SplayTreeMap<String, List<ResourceRecord>>();
+        _cache[record.resourceRecordType] ??= SplayTreeMap<String, List<ResourceRecord>>();
 
-        _cache[record.resourceRecordType]![record.name] = <ResourceRecord>[
-          record,
-        ];
+        _cache[record.resourceRecordType]![record.name] = <ResourceRecord>[record];
       } else {
         _cache[record.resourceRecordType]![record.name]!.add(record);
       }
@@ -59,11 +55,7 @@ class ResourceRecordCache {
   }
 
   /// Get a record from this cache.
-  void lookup<T extends ResourceRecord>(
-    String name,
-    int type,
-    List<T> results,
-  ) {
+  void lookup<T extends ResourceRecord>(String name, int type, List<T> results) {
     assert(ResourceRecordType.debugAssertValid(type));
     final int time = DateTime.now().millisecondsSinceEpoch;
     final SplayTreeMap<String, List<ResourceRecord>>? candidates = _cache[type];
@@ -75,9 +67,7 @@ class ResourceRecordCache {
     if (candidateRecords == null) {
       return;
     }
-    candidateRecords.removeWhere(
-      (ResourceRecord candidate) => candidate.validUntil < time,
-    );
+    candidateRecords.removeWhere((ResourceRecord candidate) => candidate.validUntil < time);
     results.addAll(candidateRecords.cast<T>());
   }
 }

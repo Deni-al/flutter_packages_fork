@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,10 +28,8 @@ export 'widgets.dart';
 /// new [GoogleSignInAccount] instance until after a call to [signOut].
 @immutable
 class GoogleSignInAccount implements GoogleIdentity {
-  GoogleSignInAccount._(
-    GoogleSignInUserData userData,
-    AuthenticationTokenData tokenData,
-  ) : displayName = userData.displayName,
+  GoogleSignInAccount._(GoogleSignInUserData userData, AuthenticationTokenData tokenData)
+    : displayName = userData.displayName,
       email = userData.email,
       id = userData.id,
       photoUrl = userData.photoUrl,
@@ -82,22 +80,15 @@ class GoogleSignInAccount implements GoogleIdentity {
         email == otherAccount.email &&
         id == otherAccount.id &&
         photoUrl == otherAccount.photoUrl &&
-        _authenticationTokens.idToken ==
-            otherAccount._authenticationTokens.idToken;
+        _authenticationTokens.idToken == otherAccount._authenticationTokens.idToken;
   }
 
   @override
-  int get hashCode => Object.hash(
-    displayName,
-    email,
-    id,
-    photoUrl,
-    _authenticationTokens.idToken,
-  );
+  int get hashCode => Object.hash(displayName, email, id, photoUrl, _authenticationTokens.idToken);
 
   @override
   String toString() {
-    final Map<String, dynamic> data = <String, dynamic>{
+    final data = <String, dynamic>{
       'displayName': displayName,
       'email': email,
       'id': id,
@@ -136,9 +127,10 @@ class GoogleSignInAuthorizationClient {
   ///
   /// If authorization would require user interaction, this returns null, in
   /// which case [authorizeScopes] should be used instead.
-  Future<GoogleSignInClientAuthorization?> authorizationForScopes(
-    List<String> scopes,
-  ) async {
+  ///
+  /// In rare cases, this can return tokens that are no longer valid. See
+  /// [clearAuthorizationToken] for details.
+  Future<GoogleSignInClientAuthorization?> authorizationForScopes(List<String> scopes) async {
     return _authorizeClient(scopes, promptIfUnauthorized: false);
   }
 
@@ -150,9 +142,10 @@ class GoogleSignInAuthorizationClient {
   /// allowed (for example, while the app is foregrounded on mobile), and if
   /// [GoogleSignIn.authorizationRequiresUserInteraction] returns true this
   /// should only be called from an user interaction handler.
-  Future<GoogleSignInClientAuthorization> authorizeScopes(
-    List<String> scopes,
-  ) async {
+  ///
+  /// In rare cases, this can return tokens that are no longer valid. See
+  /// [clearAuthorizationToken] for details.
+  Future<GoogleSignInClientAuthorization> authorizeScopes(List<String> scopes) async {
     final GoogleSignInClientAuthorization? authz = await _authorizeClient(
       scopes,
       promptIfUnauthorized: true,
@@ -173,8 +166,10 @@ class GoogleSignInAuthorizationClient {
   /// authorization headers, containing the access token for the given scopes.
   ///
   /// Returns null if the given scopes are not authorized, or there is no
-  /// currently valid authorization token available, and
-  /// [promptIfNecessary] is false.
+  /// unexpired authorization token available, and [promptIfNecessary] is false.
+  ///
+  /// In rare cases, this can return tokens that are no longer valid. See
+  /// [clearAuthorizationToken] for details.
   ///
   /// See also https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Authorization.
   Future<Map<String, String>?> authorizationHeaders(
@@ -187,10 +182,7 @@ class GoogleSignInAuthorizationClient {
     if (authz == null) {
       return null;
     }
-    return <String, String>{
-      'Authorization': 'Bearer ${authz.accessToken}',
-      'X-Goog-AuthUser': '0',
-    };
+    return <String, String>{'Authorization': 'Bearer ${authz.accessToken}', 'X-Goog-AuthUser': '0'};
   }
 
   /// Requests that the user authorize the given scopes for server use.
@@ -207,11 +199,11 @@ class GoogleSignInAuthorizationClient {
   /// allowed (for example, while the app is foregrounded on mobile), and if
   /// [GoogleSignIn.authorizationRequiresUserInteraction] returns true this
   /// should only be called from an user interaction handler.
-  Future<GoogleSignInServerAuthorization?> authorizeServer(
-    List<String> scopes,
-  ) async {
-    final ServerAuthorizationTokenData? tokens = await GoogleSignInPlatform
-        .instance
+  ///
+  /// In rare cases, this can return tokens that are no longer valid. See
+  /// [clearAuthorizationToken] for details.
+  Future<GoogleSignInServerAuthorization?> authorizeServer(List<String> scopes) async {
+    final ServerAuthorizationTokenData? tokens = await GoogleSignInPlatform.instance
         .serverAuthorizationTokensForScopes(
           ServerAuthorizationTokensForScopesParameters(
             request: AuthorizationRequestDetails(
@@ -224,17 +216,28 @@ class GoogleSignInAuthorizationClient {
         );
     return tokens == null
         ? null
-        : GoogleSignInServerAuthorization(
-          serverAuthCode: tokens.serverAuthCode,
-        );
+        : GoogleSignInServerAuthorization(serverAuthCode: tokens.serverAuthCode);
+  }
+
+  /// Removes the given [accessToken] from any local authorization caches.
+  ///
+  /// This should be called if using an access token results in an invalid token
+  /// response from the target API, followed by re-requsting authorization.
+  ///
+  /// A token can be invalidated by, for example, a user removing an
+  /// application's authorization from outside of the application:
+  /// https://support.google.com/accounts/answer/13533235.
+  Future<void> clearAuthorizationToken({required String accessToken}) {
+    return GoogleSignInPlatform.instance.clearAuthorizationToken(
+      ClearAuthorizationTokenParams(accessToken: accessToken),
+    );
   }
 
   Future<GoogleSignInClientAuthorization?> _authorizeClient(
     List<String> scopes, {
     required bool promptIfUnauthorized,
   }) async {
-    final ClientAuthorizationTokenData? tokens = await GoogleSignInPlatform
-        .instance
+    final ClientAuthorizationTokenData? tokens = await GoogleSignInPlatform.instance
         .clientAuthorizationTokensForScopes(
           ClientAuthorizationTokensForScopesParameters(
             request: AuthorizationRequestDetails(
@@ -245,9 +248,7 @@ class GoogleSignInAuthorizationClient {
             ),
           ),
         );
-    return tokens == null
-        ? null
-        : GoogleSignInClientAuthorization(accessToken: tokens.accessToken);
+    return tokens == null ? null : GoogleSignInClientAuthorization(accessToken: tokens.accessToken);
   }
 }
 
@@ -328,9 +329,7 @@ class GoogleSignIn {
           ),
         );
       case AuthenticationEventSignOut():
-        _authenticationStreamController.add(
-          GoogleSignInAuthenticationEventSignOut(),
-        );
+        _authenticationStreamController.add(GoogleSignInAuthenticationEventSignOut());
       case AuthenticationEventException():
         _authenticationStreamController.addError(event.exception);
     }
@@ -342,8 +341,7 @@ class GoogleSignIn {
     return _authenticationStreamController.stream;
   }
 
-  final StreamController<GoogleSignInAuthenticationEvent>
-  _authenticationStreamController =
+  final StreamController<GoogleSignInAuthenticationEvent> _authenticationStreamController =
       StreamController<GoogleSignInAuthenticationEvent>.broadcast();
 
   // Whether this package is responsible for creating stream events from
@@ -390,11 +388,8 @@ class GoogleSignIn {
     bool reportAllExceptions = false,
   }) {
     try {
-      final Future<AuthenticationResults?>? future = GoogleSignInPlatform
-          .instance
-          .attemptLightweightAuthentication(
-            const AttemptLightweightAuthenticationParameters(),
-          );
+      final Future<AuthenticationResults?>? future = GoogleSignInPlatform.instance
+          .attemptLightweightAuthentication(const AttemptLightweightAuthenticationParameters());
       if (future == null) {
         return null;
       }
@@ -436,14 +431,9 @@ class GoogleSignIn {
         return null;
       }
 
-      final GoogleSignInAccount account = GoogleSignInAccount._(
-        result.user,
-        result.authenticationTokens,
-      );
+      final account = GoogleSignInAccount._(result.user, result.authenticationTokens);
       if (_createAuthenticationStreamEvents) {
-        _authenticationStreamController.add(
-          GoogleSignInAuthenticationEventSignIn(user: account),
-        );
+        _authenticationStreamController.add(GoogleSignInAuthenticationEventSignIn(user: account));
       }
       return account;
     } on GoogleSignInException catch (e, stack) {
@@ -487,8 +477,7 @@ class GoogleSignIn {
   /// determine how authentication is handled. For instance, the platform may
   /// provide platform-controlled sign-in UI elements that must be used instead
   /// of application-specific UI.
-  bool supportsAuthenticate() =>
-      GoogleSignInPlatform.instance.supportsAuthenticate();
+  bool supportsAuthenticate() => GoogleSignInPlatform.instance.supportsAuthenticate();
 
   /// Whether or not authorization calls that could show UI must be called from
   /// a user interaction, such as a button press, on the current platform.
@@ -513,20 +502,14 @@ class GoogleSignIn {
   /// that do not will ignore [scopeHint]. You should always assume that
   /// [GoogleSignInAuthorizationClient.authorizationForScopes] could return null
   /// even if you pass a [scopeHint] here.
-  Future<GoogleSignInAccount> authenticate({
-    List<String> scopeHint = const <String>[],
-  }) async {
+  Future<GoogleSignInAccount> authenticate({List<String> scopeHint = const <String>[]}) async {
     try {
-      final AuthenticationResults result = await GoogleSignInPlatform.instance
-          .authenticate(AuthenticateParameters(scopeHint: scopeHint));
-      final GoogleSignInAccount account = GoogleSignInAccount._(
-        result.user,
-        result.authenticationTokens,
+      final AuthenticationResults result = await GoogleSignInPlatform.instance.authenticate(
+        AuthenticateParameters(scopeHint: scopeHint),
       );
+      final account = GoogleSignInAccount._(result.user, result.authenticationTokens);
       if (_createAuthenticationStreamEvents) {
-        _authenticationStreamController.add(
-          GoogleSignInAuthenticationEventSignIn(user: account),
-        );
+        _authenticationStreamController.add(GoogleSignInAuthenticationEventSignIn(user: account));
       }
       return account;
     } on GoogleSignInException catch (e, stack) {
@@ -553,9 +536,7 @@ class GoogleSignIn {
   /// Signs out any currently signed in user(s).
   Future<void> signOut() {
     if (_createAuthenticationStreamEvents) {
-      _authenticationStreamController.add(
-        GoogleSignInAuthenticationEventSignOut(),
-      );
+      _authenticationStreamController.add(GoogleSignInAuthenticationEventSignOut());
     }
     return GoogleSignInPlatform.instance.signOut(const SignOutParams());
   }
@@ -565,9 +546,7 @@ class GoogleSignIn {
   Future<void> disconnect() async {
     // Disconnecting also signs out, so synthesize a sign-out if necessary.
     if (_createAuthenticationStreamEvents) {
-      _authenticationStreamController.add(
-        GoogleSignInAuthenticationEventSignOut(),
-      );
+      _authenticationStreamController.add(GoogleSignInAuthenticationEventSignOut());
     }
     // TODO(stuartmorgan): Consider making a per-user disconnect option once
     //  the Android implementation is available so that we can see how it is

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,9 +33,7 @@ final class AndroidInteractiveMediaAds extends InteractiveMediaAdsPlatform {
   }
 
   @override
-  AndroidAdsLoader createPlatformAdsLoader(
-    PlatformAdsLoaderCreationParams params,
-  ) {
+  AndroidAdsLoader createPlatformAdsLoader(PlatformAdsLoaderCreationParams params) {
     return AndroidAdsLoader(params);
   }
 
@@ -68,9 +66,7 @@ final class AndroidInteractiveMediaAds extends InteractiveMediaAdsPlatform {
   }
 
   @override
-  AndroidImaSettings createPlatformImaSettings(
-    PlatformImaSettingsCreationParams params,
-  ) {
+  AndroidImaSettings createPlatformImaSettings(PlatformImaSettingsCreationParams params) {
     return AndroidImaSettings(params);
   }
 }

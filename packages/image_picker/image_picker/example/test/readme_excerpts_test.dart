@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,10 +20,7 @@ void main() {
     expect(results.length, greaterThan(4));
     // And the calls should all be different. This works since each fake call
     // returns a different result.
-    expect(
-      results.map((XFile? file) => file?.path).toSet().length,
-      results.length,
-    );
+    expect(results.map((XFile? file) => file?.path).toSet().length, results.length);
   });
 
   test('sanity check getLostData', () async {

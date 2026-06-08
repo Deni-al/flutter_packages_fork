@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,8 +91,7 @@ class Rect {
 
   /// Creates a rectangle representing a circle with centerpoint `x,`y` and
   /// radius `r`.
-  const Rect.fromCircle(double x, double y, double r)
-    : this.fromLTRB(x - r, y - r, x + r, y + r);
+  const Rect.fromCircle(double x, double y, double r) : this.fromLTRB(x - r, y - r, x + r, y + r);
 
   /// A rectangle covering the entire coordinate space, equal to dart:ui's
   /// definition.

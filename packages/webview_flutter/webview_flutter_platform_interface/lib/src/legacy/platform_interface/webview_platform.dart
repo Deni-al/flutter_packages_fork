@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,8 +61,6 @@ abstract class WebViewPlatform {
   /// Returns true if cookies were present before clearing, else false.
   /// Soon to be deprecated. 'Use `WebViewCookieManagerPlatform.clearCookies` instead.
   Future<bool> clearCookies() {
-    throw UnimplementedError(
-      'WebView clearCookies is not implemented on the current platform',
-    );
+    throw UnimplementedError('WebView clearCookies is not implemented on the current platform');
   }
 }

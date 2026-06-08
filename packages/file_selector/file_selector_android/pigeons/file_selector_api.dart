@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,12 +7,9 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/src/file_selector_api.g.dart',
-    javaOut:
-        'android/src/main/java/dev/flutter/packages/file_selector_android/GeneratedFileSelectorApi.java',
-    javaOptions: JavaOptions(
-      package: 'dev.flutter.packages.file_selector_android',
-      className: 'GeneratedFileSelectorApi',
-    ),
+    kotlinOut:
+        'android/src/main/kotlin/dev/flutter/packages/file_selector_android/GeneratedFileSelectorApi.kt',
+    kotlinOptions: KotlinOptions(package: 'dev.flutter.packages.file_selector_android'),
     copyrightHeader: 'pigeons/copyright.txt',
   ),
 )
@@ -23,7 +20,7 @@ enum FileSelectorExceptionCode {
   illegalStateException, //unused
 }
 
-class FileSelectorNativeException implements Exception {
+class FileSelectorNativeException {
   late final FileSelectorExceptionCode fileSelectorExceptionCode;
   late final String message;
 }
@@ -54,10 +51,7 @@ abstract class FileSelectorApi {
   /// Opens a file dialog for loading files and returns a list of file responses
   /// chosen by the user.
   @async
-  List<FileResponse> openFiles(
-    String? initialDirectory,
-    FileTypes allowedTypes,
-  );
+  List<FileResponse> openFiles(String? initialDirectory, FileTypes allowedTypes);
 
   /// Opens a file dialog for loading directories and returns a directory path.
   ///

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,14 +48,8 @@ void main() {
     });
 
     test('exposureModeFromPlatform() should convert correctly', () {
-      expect(
-        exposureModeFromPlatform(PlatformExposureMode.auto),
-        ExposureMode.auto,
-      );
-      expect(
-        exposureModeFromPlatform(PlatformExposureMode.locked),
-        ExposureMode.locked,
-      );
+      expect(exposureModeFromPlatform(PlatformExposureMode.auto), ExposureMode.auto);
+      expect(exposureModeFromPlatform(PlatformExposureMode.locked), ExposureMode.locked);
     });
 
     test('focusModeFromPlatform() should convert correctly', () {

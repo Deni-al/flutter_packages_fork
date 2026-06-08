@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,12 +68,9 @@ class AdsRequest {
   final PlatformAdsRequest platform;
 
   /// The URL from which ads will be requested.
-  String get adTagUrl => switch (platform) {
+  String? get adTagUrl => switch (platform) {
     final PlatformAdsRequestWithAdTagUrl request => request.adTagUrl,
-    // TODO(bparrishMines): This returns an empty string rather than null
-    // to prevent a breaking change. This should be updated to return null
-    // on the next major release.
-    PlatformAdsRequestWithAdsResponse() => '',
+    PlatformAdsRequestWithAdsResponse() => null,
   };
 
   /// Specifies a VAST, VMAP, or ad rules response to be used instead of making
@@ -85,12 +82,9 @@ class AdsRequest {
 
   /// A [ContentProgressProvider] instance to allow scheduling of ad breaks
   /// based on content progress (cue points).
-  ContentProgressProvider? get contentProgressProvider =>
-      platform.contentProgressProvider != null
-          ? ContentProgressProvider.fromPlatform(
-            platform.contentProgressProvider!,
-          )
-          : null;
+  ContentProgressProvider? get contentProgressProvider => platform.contentProgressProvider != null
+      ? ContentProgressProvider.fromPlatform(platform.contentProgressProvider!)
+      : null;
 
   /// Notifies the SDK whether the player intends to start the content and ad in
   /// response to a user action or whether it will be automatically played.
@@ -115,8 +109,7 @@ class AdsRequest {
 
   /// Specifies the maximum amount of time to wait, after calling requestAds,
   /// before requesting the ad tag URL.
-  Duration? get liveStreamPrefetchMaxWaitTime =>
-      platform.liveStreamPrefetchMaxWaitTime;
+  Duration? get liveStreamPrefetchMaxWaitTime => platform.liveStreamPrefetchMaxWaitTime;
 
   /// Specifies the VAST load timeout in milliseconds for a single wrapper.
   Duration? get vastLoadTimeout => platform.vastLoadTimeout;

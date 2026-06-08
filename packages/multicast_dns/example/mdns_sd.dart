@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,7 @@ For example:
 
   final bool verbose = args.contains('--verbose') || args.contains('-v');
   final String name = args.last;
-  final MDnsClient client = MDnsClient();
+  final client = MDnsClient();
   await client.start();
 
   await for (final PtrResourceRecord ptr in client.lookup<PtrResourceRecord>(
@@ -41,10 +41,9 @@ For example:
             .lookup<TxtResourceRecord>(ResourceRecordQuery.text(ptr.domainName))
             .forEach(print);
       }
-      await for (final IPAddressResourceRecord ip in client
-          .lookup<IPAddressResourceRecord>(
-            ResourceRecordQuery.addressIPv4(srv.target),
-          )) {
+      await for (final IPAddressResourceRecord ip in client.lookup<IPAddressResourceRecord>(
+        ResourceRecordQuery.addressIPv4(srv.target),
+      )) {
         if (verbose) {
           print(ip);
         }
@@ -53,10 +52,9 @@ For example:
           '${srv.target}:${srv.port} with ${ip.address}.',
         );
       }
-      await for (final IPAddressResourceRecord ip in client
-          .lookup<IPAddressResourceRecord>(
-            ResourceRecordQuery.addressIPv6(srv.target),
-          )) {
+      await for (final IPAddressResourceRecord ip in client.lookup<IPAddressResourceRecord>(
+        ResourceRecordQuery.addressIPv6(srv.target),
+      )) {
         if (verbose) {
           print(ip);
         }

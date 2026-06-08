@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,18 +20,14 @@ class PlatformViewPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String viewType = 'plugins.flutter.dev/video_player_android';
-    final PlatformVideoViewCreationParams creationParams =
-        PlatformVideoViewCreationParams(playerId: playerId);
+    const viewType = 'plugins.flutter.dev/video_player_android';
+    final creationParams = PlatformVideoViewCreationParams(playerId: playerId);
 
     // IgnorePointer so that GestureDetector can be used above the platform view.
     return IgnorePointer(
       child: PlatformViewLink(
         viewType: viewType,
-        surfaceFactory: (
-          BuildContext context,
-          PlatformViewController controller,
-        ) {
+        surfaceFactory: (BuildContext context, PlatformViewController controller) {
           return AndroidViewSurface(
             controller: controller as AndroidViewController,
             gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
@@ -42,8 +38,7 @@ class PlatformViewPlayer extends StatelessWidget {
           return PlatformViewsService.initSurfaceAndroidView(
               id: params.id,
               viewType: viewType,
-              layoutDirection:
-                  Directionality.maybeOf(context) ?? TextDirection.ltr,
+              layoutDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
               creationParams: creationParams,
               creationParamsCodec: AndroidVideoPlayerApi.pigeonChannelCodec,
               onFocus: () => params.onFocusChanged(true),

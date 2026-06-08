@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,10 +27,9 @@ class TestAppState extends State<TestApp> {
           onPressed: () {},
           child: PointerInterceptorIOS().buildWidget(
             child: TextButton(
-              onPressed:
-                  () => setState(() {
-                    _buttonText = 'Clicked';
-                  }),
+              onPressed: () => setState(() {
+                _buttonText = 'Clicked';
+              }),
               child: Text(_buttonText),
             ),
           ),
@@ -42,9 +41,7 @@ class TestAppState extends State<TestApp> {
 
 void main() {
   testWidgets('Button remains clickable and is added to '
-      'hierarchy after being wrapped in pointer interceptor', (
-    WidgetTester tester,
-  ) async {
+      'hierarchy after being wrapped in pointer interceptor', (WidgetTester tester) async {
     await tester.pumpWidget(const TestApp());
     await tester.tap(find.text('Test Button'));
     await tester.pump();

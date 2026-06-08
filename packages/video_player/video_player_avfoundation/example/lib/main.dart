@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,19 +33,11 @@ class _App extends StatelessWidget {
         ),
         body: TabBarView(
           children: <Widget>[
+            _ViewTypeTabBar(builder: (VideoViewType viewType) => _BumbleBeeRemoteVideo(viewType)),
             _ViewTypeTabBar(
-              builder:
-                  (VideoViewType viewType) => _BumbleBeeRemoteVideo(viewType),
+              builder: (VideoViewType viewType) => _BumbleBeeEncryptedLiveStream(viewType),
             ),
-            _ViewTypeTabBar(
-              builder:
-                  (VideoViewType viewType) =>
-                      _BumbleBeeEncryptedLiveStream(viewType),
-            ),
-            _ViewTypeTabBar(
-              builder:
-                  (VideoViewType viewType) => _ButterFlyAssetVideo(viewType),
-            ),
+            _ViewTypeTabBar(builder: (VideoViewType viewType) => _ButterFlyAssetVideo(viewType)),
           ],
         ),
       ),
@@ -62,8 +54,7 @@ class _ViewTypeTabBar extends StatefulWidget {
   State<_ViewTypeTabBar> createState() => _ViewTypeTabBarState();
 }
 
-class _ViewTypeTabBarState extends State<_ViewTypeTabBar>
-    with SingleTickerProviderStateMixin {
+class _ViewTypeTabBarState extends State<_ViewTypeTabBar> with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
   @override
@@ -119,10 +110,7 @@ class _ButterFlyAssetVideoState extends State<_ButterFlyAssetVideo> {
   @override
   void initState() {
     super.initState();
-    _controller = MiniController.asset(
-      'assets/Butterfly-209.mp4',
-      viewType: widget.viewType,
-    );
+    _controller = MiniController.asset('assets/Butterfly-209.mp4', viewType: widget.viewType);
 
     _controller.addListener(() {
       setState(() {});
@@ -231,12 +219,10 @@ class _BumbleBeeEncryptedLiveStream extends StatefulWidget {
   final VideoViewType viewType;
 
   @override
-  _BumbleBeeEncryptedLiveStreamState createState() =>
-      _BumbleBeeEncryptedLiveStreamState();
+  _BumbleBeeEncryptedLiveStreamState createState() => _BumbleBeeEncryptedLiveStreamState();
 }
 
-class _BumbleBeeEncryptedLiveStreamState
-    extends State<_BumbleBeeEncryptedLiveStream> {
+class _BumbleBeeEncryptedLiveStreamState extends State<_BumbleBeeEncryptedLiveStream> {
   late MiniController _controller;
 
   @override
@@ -270,13 +256,12 @@ class _BumbleBeeEncryptedLiveStreamState
           const Text('With remote encrypted m3u8'),
           Container(
             padding: const EdgeInsets.all(20),
-            child:
-                _controller.value.isInitialized
-                    ? AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
-                    )
-                    : const Text('loading...'),
+            child: _controller.value.isInitialized
+                ? AspectRatio(
+                    aspectRatio: _controller.value.aspectRatio,
+                    child: VideoPlayer(_controller),
+                  )
+                : const Text('loading...'),
           ),
         ],
       ),
@@ -307,20 +292,19 @@ class _ControlsOverlay extends StatelessWidget {
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 50),
           reverseDuration: const Duration(milliseconds: 200),
-          child:
-              controller.value.isPlaying
-                  ? const SizedBox.shrink()
-                  : const ColoredBox(
-                    color: Colors.black26,
-                    child: Center(
-                      child: Icon(
-                        Icons.play_arrow,
-                        color: Colors.white,
-                        size: 100.0,
-                        semanticLabel: 'Play',
-                      ),
+          child: controller.value.isPlaying
+              ? const SizedBox.shrink()
+              : const ColoredBox(
+                  color: Colors.black26,
+                  child: Center(
+                    child: Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 100.0,
+                      semanticLabel: 'Play',
                     ),
                   ),
+                ),
         ),
         GestureDetector(
           onTap: () {

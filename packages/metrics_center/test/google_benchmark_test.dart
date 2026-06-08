@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,16 +26,13 @@ void main() {
       3.89,
       4.89,
     ]);
-    expectSetMatch(
-      points.map((MetricPoint p) => p.tags[kSubResultKey]),
-      <String>[
-        'cpu_time',
-        'real_time',
-        'cpu_coefficient',
-        'real_coefficient',
-        'rms',
-      ],
-    );
+    expectSetMatch(points.map((MetricPoint p) => p.tags[kSubResultKey]), <String>[
+      'cpu_time',
+      'real_time',
+      'cpu_coefficient',
+      'real_coefficient',
+      'rms',
+    ]);
     expectSetMatch(points.map((MetricPoint p) => p.tags[kNameKey]), <String>[
       'BM_PaintRecordInit',
       'SkParagraphFixture/ShortLayout',
@@ -43,7 +40,7 @@ void main() {
       'ParagraphFixture/TextBigO_BigO',
       'ParagraphFixture/TextBigO_RMS',
     ]);
-    for (final MetricPoint p in points) {
+    for (final p in points) {
       expect(p.tags.containsKey('host_name'), false);
       expect(p.tags.containsKey('load_avg'), false);
       expect(p.tags.containsKey('caches'), false);

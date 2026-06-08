@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,14 +8,12 @@ import 'package:go_router_examples/state_restoration/go_route_state_restoration.
 
 void main() {
   testWidgets('GoRoute navigation location and route state '
-      'is restored when restorationIds are provided', (
-    WidgetTester tester,
-  ) async {
-    const String homeTitle = 'Home';
-    const String loginTitle = 'Login';
+      'is restored when restorationIds are provided', (WidgetTester tester) async {
+    const homeTitle = 'Home';
+    const loginTitle = 'Login';
 
-    const String homeText = 'homeText';
-    const String loginText = 'loginText';
+    const homeText = 'homeText';
+    const loginText = 'loginText';
 
     await tester.pumpWidget(const App());
     expect(find.text(homeTitle), findsOneWidget);

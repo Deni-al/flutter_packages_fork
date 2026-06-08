@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,10 +55,7 @@ class ExampleSimpleState extends State<ExampleSimple> {
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                Text(
-                  'You have pushed the button this many times:',
-                  style: pushButtonTextStyle,
-                ),
+                Text('You have pushed the button this many times:', style: pushButtonTextStyle),
                 Text('$_counter', style: counterTextStyle),
               ],
             );

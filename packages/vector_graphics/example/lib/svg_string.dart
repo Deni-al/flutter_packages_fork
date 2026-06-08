@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,9 +47,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final TextEditingController _controller = TextEditingController(
-    text: _flutterLogoString,
-  );
+  final TextEditingController _controller = TextEditingController(text: _flutterLogoString);
   ByteData? _data;
   Timer? _debounce;
   int _svgLength = 0;

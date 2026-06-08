@@ -1,12 +1,11 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 import 'package:flutter/services.dart';
 
 import '../../store_kit_2_wrappers.dart';
-
-InAppPurchase2API _hostApi = InAppPurchase2API();
+import '../in_app_purchase_apis.dart';
 
 /// A wrapper around StoreKit2's ProductType
 /// https://developer.apple.com/documentation/storekit/product/producttype
@@ -155,13 +154,9 @@ extension on SK2SubscriptionInfoMessage {
   SK2SubscriptionInfo convertFromPigeon() {
     return SK2SubscriptionInfo(
       subscriptionGroupID: subscriptionGroupID,
-      promotionalOffers:
-          promotionalOffers
-              .map(
-                (SK2SubscriptionOfferMessage offer) =>
-                    offer.convertFromPigeon(),
-              )
-              .toList(),
+      promotionalOffers: promotionalOffers
+          .map((SK2SubscriptionOfferMessage offer) => offer.convertFromPigeon())
+          .toList(),
       subscriptionPeriod: subscriptionPeriod.convertFromPigeon(),
     );
   }
@@ -259,27 +254,24 @@ class SK2PriceLocale {
 
   /// Convert this instance of [SK2PriceLocale] to [SK2PriceLocaleMessage]
   SK2PriceLocaleMessage convertToPigeon() {
-    return SK2PriceLocaleMessage(
-      currencyCode: currencyCode,
-      currencySymbol: currencySymbol,
-    );
+    return SK2PriceLocaleMessage(currencyCode: currencyCode, currencySymbol: currencySymbol);
   }
 }
 
 extension on SK2PriceLocaleMessage {
   SK2PriceLocale convertFromPigeon() {
-    return SK2PriceLocale(
-      currencyCode: currencyCode,
-      currencySymbol: currencySymbol,
-    );
+    return SK2PriceLocale(currencyCode: currencyCode, currencySymbol: currencySymbol);
   }
 }
 
 /// Wrapper around [PurchaseResult]
 /// https://developer.apple.com/documentation/storekit/product/purchaseresult
 enum SK2ProductPurchaseResult {
-  /// The purchase succeeded and results in a transaction.
+  /// The purchase succeeded and results in a transaction signed by the App Store.
   success,
+
+  /// The purchase succeeded but the transation could not be verified.
+  unverified,
 
   /// The user canceled the purchase.
   userCancelled,
@@ -324,14 +316,12 @@ class SK2ProductPurchaseOptions {
 
 extension on SK2ProductPurchaseResultMessage {
   SK2ProductPurchaseResult convertFromPigeon() {
-    switch (this) {
-      case SK2ProductPurchaseResultMessage.success:
-        return SK2ProductPurchaseResult.success;
-      case SK2ProductPurchaseResultMessage.userCancelled:
-        return SK2ProductPurchaseResult.userCancelled;
-      case SK2ProductPurchaseResultMessage.pending:
-        return SK2ProductPurchaseResult.pending;
-    }
+    return switch (this) {
+      SK2ProductPurchaseResultMessage.success => SK2ProductPurchaseResult.success,
+      SK2ProductPurchaseResultMessage.userCancelled => SK2ProductPurchaseResult.userCancelled,
+      SK2ProductPurchaseResultMessage.pending => SK2ProductPurchaseResult.pending,
+      SK2ProductPurchaseResultMessage.unverified => SK2ProductPurchaseResult.unverified,
+    };
   }
 }
 
@@ -380,9 +370,7 @@ class SK2Product {
   /// If any of the identifiers are invalid or can't be found, they are excluded
   /// from the returned list.
   static Future<List<SK2Product>> products(List<String> identifiers) async {
-    final List<SK2ProductMessage?> productsMsg = await _hostApi.products(
-      identifiers,
-    );
+    final List<SK2ProductMessage?> productsMsg = await hostApi2.products(identifiers);
     if (productsMsg.isEmpty && identifiers.isNotEmpty) {
       throw PlatformException(
         code: 'storekit_no_response',
@@ -405,9 +393,9 @@ class SK2Product {
   }) async {
     SK2ProductPurchaseResultMessage result;
     if (options != null) {
-      result = await _hostApi.purchase(id, options: options.convertToPigeon());
+      result = await hostApi2.purchase(id, options: options.convertToPigeon());
     } else {
-      result = await _hostApi.purchase(id);
+      result = await hostApi2.purchase(id);
     }
     return result.convertFromPigeon();
   }
@@ -415,20 +403,14 @@ class SK2Product {
   /// Checks if the user is eligible for an introductory offer.
   /// The product must be an auto-renewable subscription.
   static Future<bool> isIntroductoryOfferEligible(String productId) async {
-    final bool result = await _hostApi.isIntroductoryOfferEligible(productId);
+    final bool result = await hostApi2.isIntroductoryOfferEligible(productId);
 
     return result;
   }
 
   /// Checks if the user is eligible for a specific win back offer.
-  static Future<bool> isWinBackOfferEligible(
-    String productId,
-    String offerId,
-  ) async {
-    final bool result = await _hostApi.isWinBackOfferEligible(
-      productId,
-      offerId,
-    );
+  static Future<bool> isWinBackOfferEligible(String productId, String offerId) async {
+    final bool result = await hostApi2.isWinBackOfferEligible(productId, offerId);
 
     return result;
   }

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,24 +43,19 @@ void main() {
   });
 
   testWidgets('initializes at the start', (_) async {
-    final int playerId =
-        (await player.create(
-          DataSource(sourceType: DataSourceType.asset, asset: _videoAssetKey),
-        ))!;
+    final int playerId = (await player.create(
+      DataSource(sourceType: DataSourceType.asset, asset: _videoAssetKey),
+    ))!;
 
-    expect(
-      await _getDuration(player, playerId),
-      const Duration(seconds: 7, milliseconds: 540),
-    );
+    expect(await _getDuration(player, playerId), const Duration(seconds: 7, milliseconds: 540));
 
     await player.dispose(playerId);
   });
 
   testWidgets('can be played', (WidgetTester tester) async {
-    final int playerId =
-        (await player.create(
-          DataSource(sourceType: DataSourceType.asset, asset: _videoAssetKey),
-        ))!;
+    final int playerId = (await player.create(
+      DataSource(sourceType: DataSourceType.asset, asset: _videoAssetKey),
+    ))!;
 
     await player.play(playerId);
     await tester.pumpAndSettle(_playDuration);
@@ -70,26 +65,21 @@ void main() {
   });
 
   testWidgets('can seek', (WidgetTester tester) async {
-    final int playerId =
-        (await player.create(
-          DataSource(sourceType: DataSourceType.asset, asset: _videoAssetKey),
-        ))!;
+    final int playerId = (await player.create(
+      DataSource(sourceType: DataSourceType.asset, asset: _videoAssetKey),
+    ))!;
 
     await player.seekTo(playerId, const Duration(seconds: 3));
     await tester.pumpAndSettle(_playDuration);
 
-    expect(
-      await player.getPosition(playerId),
-      greaterThanOrEqualTo(const Duration(seconds: 3)),
-    );
+    expect(await player.getPosition(playerId), greaterThanOrEqualTo(const Duration(seconds: 3)));
     await player.dispose(playerId);
   });
 
   testWidgets('can pause', (WidgetTester tester) async {
-    final int playerId =
-        (await player.create(
-          DataSource(sourceType: DataSourceType.asset, asset: _videoAssetKey),
-        ))!;
+    final int playerId = (await player.create(
+      DataSource(sourceType: DataSourceType.asset, asset: _videoAssetKey),
+    ))!;
 
     await player.play(playerId);
     await tester.pumpAndSettle(_playDuration);
@@ -105,17 +95,14 @@ void main() {
 
   testWidgets('can play a video from a file', (WidgetTester tester) async {
     final Directory directory = await getTemporaryDirectory();
-    final File file = File('${directory.path}/video.mp4');
+    final file = File('${directory.path}/video.mp4');
     await file.writeAsBytes(
-      Uint8List.fromList(
-        (await rootBundle.load(_videoAssetKey)).buffer.asUint8List(),
-      ),
+      Uint8List.fromList((await rootBundle.load(_videoAssetKey)).buffer.asUint8List()),
     );
 
-    final int playerId =
-        (await player.create(
-          DataSource(sourceType: DataSourceType.file, uri: file.path),
-        ))!;
+    final int playerId = (await player.create(
+      DataSource(sourceType: DataSourceType.file, uri: file.path),
+    ))!;
 
     await player.play(playerId);
     await tester.pumpAndSettle(_playDuration);
@@ -126,13 +113,12 @@ void main() {
   });
 
   testWidgets('can play a video from network', (WidgetTester tester) async {
-    final int playerId =
-        (await player.create(
-          DataSource(
-            sourceType: DataSourceType.network,
-            uri: getUrlForAssetAsNetworkSource(_videoAssetKey),
-          ),
-        ))!;
+    final int playerId = (await player.create(
+      DataSource(
+        sourceType: DataSourceType.network,
+        uri: getUrlForAssetAsNetworkSource(_videoAssetKey),
+      ),
+    ))!;
 
     await player.play(playerId);
     await player.seekTo(playerId, const Duration(seconds: 5));
@@ -160,10 +146,7 @@ Future<Duration> _getDuration(AndroidVideoPlayer player, int playerId) {
       });
 }
 
-Future<DurationRange> _getBufferingRange(
-  AndroidVideoPlayer player,
-  int playerId,
-) {
+Future<DurationRange> _getBufferingRange(AndroidVideoPlayer player, int playerId) {
   return player
       .videoEventsFor(playerId)
       .firstWhere((VideoEvent event) {

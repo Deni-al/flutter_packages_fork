@@ -1,5 +1,19 @@
 ## NEXT
 
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 6.7.0
+
+* Adds `VideoTrack` class and `getVideoTracks()`, `selectVideoTrack()`, `isVideoTrackSupportAvailable()` methods for video track (quality) selection.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
+
+## 6.6.0
+
+* Adds `VideoAudioTrack` class and `getAudioTracks()`, `selectAudioTrack()`, `isAudioTrackSupportAvailable()` methods for audio track management.
+
+## 6.5.0
+
+* Adds a `setAllowBackgroundPlayback` method to dynamically control background playback.
 * Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
 
 ## 6.4.0

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,13 +38,8 @@ class WebViewCookie {
   /// https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-02#section-4.1.1
   final String path;
 
-  /// Serializes the [WebViewCookie] to a Map<String, String>.
+  /// Serializes the [WebViewCookie] to a `Map<String, String>`.
   Map<String, String> toJson() {
-    return <String, String>{
-      'name': name,
-      'value': value,
-      'domain': domain,
-      'path': path,
-    };
+    return <String, String>{'name': name, 'value': value, 'domain': domain, 'path': path};
   }
 }

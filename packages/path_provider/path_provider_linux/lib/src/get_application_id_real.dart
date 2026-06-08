@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,10 +49,9 @@ class GioUtils {
       return nullptr;
     }
     final _GApplicationGetApplicationIdDart gApplicationGetApplicationId = _gio!
-        .lookupFunction<
-          _GApplicationGetApplicationIdC,
-          _GApplicationGetApplicationIdDart
-        >('g_application_get_application_id');
+        .lookupFunction<_GApplicationGetApplicationIdC, _GApplicationGetApplicationIdDart>(
+          'g_application_get_application_id',
+        );
     return gApplicationGetApplicationId(app);
   }
 }

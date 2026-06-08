@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,8 +10,7 @@ import '../../billing_client_wrappers.dart';
 ///
 /// This usually indicates a serious underlining code issue in the plugin.
 @visibleForTesting
-const String kInvalidBillingConfigErrorMessage =
-    'Invalid billing config map from method channel.';
+const String kInvalidBillingConfigErrorMessage = 'Invalid billing config map from method channel.';
 
 /// Params containing the response code and the debug message from the Play Billing API response.
 @immutable

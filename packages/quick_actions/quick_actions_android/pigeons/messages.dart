@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,8 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/src/messages.g.dart',
-    javaOut:
-        'android/src/main/java/io/flutter/plugins/quickactions/Messages.java',
-    javaOptions: JavaOptions(package: 'io.flutter.plugins.quickactions'),
+    kotlinOut: 'android/src/main/kotlin/io/flutter/plugins/quickactions/Messages.kt',
+    kotlinOptions: KotlinOptions(package: 'io.flutter.plugins.quickactions'),
     copyrightHeader: 'pigeons/copyright.txt',
   ),
 )

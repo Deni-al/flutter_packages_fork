@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,9 +122,7 @@ class CameraImage {
       height = data.height,
       width = data.width,
       planes = List<Plane>.unmodifiable(
-        data.planes.map<Plane>(
-          (CameraImagePlane plane) => Plane._fromPlatformInterface(plane),
-        ),
+        data.planes.map<Plane>((CameraImagePlane plane) => Plane._fromPlatformInterface(plane)),
       ),
       lensAperture = data.lensAperture,
       sensorExposureTime = data.sensorExposureTime,
@@ -141,8 +139,7 @@ class CameraImage {
       sensorSensitivity = data['sensorSensitivity'] as double?,
       planes = List<Plane>.unmodifiable(
         (data['planes'] as List<dynamic>).map<Plane>(
-          (dynamic planeData) =>
-              Plane._fromPlatformData(planeData as Map<dynamic, dynamic>),
+          (dynamic planeData) => Plane._fromPlatformData(planeData as Map<dynamic, dynamic>),
         ),
       );
 

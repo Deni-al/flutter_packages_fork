@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,10 +42,7 @@ class FakeSignInBackend {
         // do nothing
         return null;
       case 'getTokens':
-        return <String, String?>{
-          'idToken': user.idToken,
-          'accessToken': user.accessToken,
-        };
+        return <String, String?>{'idToken': user.idToken, 'accessToken': user.accessToken};
       case 'signIn':
         return user._asMap;
       case 'signInSilently':

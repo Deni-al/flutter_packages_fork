@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,10 +23,7 @@ PushFn mockAdBreak({AdBreakDonePlacementInfo? adBreakDonePlacementInfo}) {
     // Call `adBreakDone` if set, with `adBreakDonePlacementInfo`.
     if (adBreakPlacement?.adBreakDone != null) {
       assert(adBreakDonePlacementInfo != null);
-      adBreakPlacement!.adBreakDone!.callAsFunction(
-        null,
-        adBreakDonePlacementInfo,
-      );
+      adBreakPlacement!.adBreakDone!.callAsFunction(null, adBreakDonePlacementInfo);
     }
   };
 }

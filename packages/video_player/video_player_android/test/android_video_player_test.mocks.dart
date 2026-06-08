@@ -23,16 +23,20 @@ import 'package:video_player_android/src/messages.g.dart' as _i2;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakePlaybackState_0 extends _i1.SmartFake implements _i2.PlaybackState {
-  _FakePlaybackState_0(Object parent, Invocation parentInvocation)
+class _FakeTexturePlayerIds_0 extends _i1.SmartFake implements _i2.TexturePlayerIds {
+  _FakeTexturePlayerIds_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
+}
+
+class _FakeNativeAudioTrackData_1 extends _i1.SmartFake implements _i2.NativeAudioTrackData {
+  _FakeNativeAudioTrackData_1(Object parent, Invocation parentInvocation)
     : super(parent, parentInvocation);
 }
 
 /// A class which mocks [AndroidVideoPlayerApi].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAndroidVideoPlayerApi extends _i1.Mock
-    implements _i2.AndroidVideoPlayerApi {
+class MockAndroidVideoPlayerApi extends _i1.Mock implements _i2.AndroidVideoPlayerApi {
   @override
   String get pigeonVar_messageChannelSuffix =>
       (super.noSuchMethod(
@@ -58,13 +62,26 @@ class MockAndroidVideoPlayerApi extends _i1.Mock
           as _i4.Future<void>);
 
   @override
-  _i4.Future<int> create(_i2.CreateMessage? msg) =>
+  _i4.Future<int> createForPlatformView(_i2.CreationOptions? options) =>
       (super.noSuchMethod(
-            Invocation.method(#create, [msg]),
+            Invocation.method(#createForPlatformView, [options]),
             returnValue: _i4.Future<int>.value(0),
             returnValueForMissingStub: _i4.Future<int>.value(0),
           )
           as _i4.Future<int>);
+
+  @override
+  _i4.Future<_i2.TexturePlayerIds> createForTextureView(_i2.CreationOptions? options) =>
+      (super.noSuchMethod(
+            Invocation.method(#createForTextureView, [options]),
+            returnValue: _i4.Future<_i2.TexturePlayerIds>.value(
+              _FakeTexturePlayerIds_0(this, Invocation.method(#createForTextureView, [options])),
+            ),
+            returnValueForMissingStub: _i4.Future<_i2.TexturePlayerIds>.value(
+              _FakeTexturePlayerIds_0(this, Invocation.method(#createForTextureView, [options])),
+            ),
+          )
+          as _i4.Future<_i2.TexturePlayerIds>);
 
   @override
   _i4.Future<void> dispose(int? playerId) =>
@@ -107,8 +124,7 @@ class MockAndroidVideoPlayerApi extends _i1.Mock
 /// A class which mocks [VideoPlayerInstanceApi].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockVideoPlayerInstanceApi extends _i1.Mock
-    implements _i2.VideoPlayerInstanceApi {
+class MockVideoPlayerInstanceApi extends _i1.Mock implements _i2.VideoPlayerInstanceApi {
   @override
   String get pigeonVar_messageChannelSuffix =>
       (super.noSuchMethod(
@@ -161,15 +177,6 @@ class MockVideoPlayerInstanceApi extends _i1.Mock
           as _i4.Future<void>);
 
   @override
-  _i4.Future<void> seekTo(int? position) =>
-      (super.noSuchMethod(
-            Invocation.method(#seekTo, [position]),
-            returnValue: _i4.Future<void>.value(),
-            returnValueForMissingStub: _i4.Future<void>.value(),
-          )
-          as _i4.Future<void>);
-
-  @override
   _i4.Future<void> pause() =>
       (super.noSuchMethod(
             Invocation.method(#pause, []),
@@ -179,21 +186,51 @@ class MockVideoPlayerInstanceApi extends _i1.Mock
           as _i4.Future<void>);
 
   @override
-  _i4.Future<_i2.PlaybackState> getPlaybackState() =>
+  _i4.Future<void> seekTo(int? position) =>
       (super.noSuchMethod(
-            Invocation.method(#getPlaybackState, []),
-            returnValue: _i4.Future<_i2.PlaybackState>.value(
-              _FakePlaybackState_0(
-                this,
-                Invocation.method(#getPlaybackState, []),
-              ),
+            Invocation.method(#seekTo, [position]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
+
+  @override
+  _i4.Future<int> getCurrentPosition() =>
+      (super.noSuchMethod(
+            Invocation.method(#getCurrentPosition, []),
+            returnValue: _i4.Future<int>.value(0),
+            returnValueForMissingStub: _i4.Future<int>.value(0),
+          )
+          as _i4.Future<int>);
+
+  @override
+  _i4.Future<int> getBufferedPosition() =>
+      (super.noSuchMethod(
+            Invocation.method(#getBufferedPosition, []),
+            returnValue: _i4.Future<int>.value(0),
+            returnValueForMissingStub: _i4.Future<int>.value(0),
+          )
+          as _i4.Future<int>);
+
+  @override
+  _i4.Future<_i2.NativeAudioTrackData> getAudioTracks() =>
+      (super.noSuchMethod(
+            Invocation.method(#getAudioTracks, []),
+            returnValue: _i4.Future<_i2.NativeAudioTrackData>.value(
+              _FakeNativeAudioTrackData_1(this, Invocation.method(#getAudioTracks, [])),
             ),
-            returnValueForMissingStub: _i4.Future<_i2.PlaybackState>.value(
-              _FakePlaybackState_0(
-                this,
-                Invocation.method(#getPlaybackState, []),
-              ),
+            returnValueForMissingStub: _i4.Future<_i2.NativeAudioTrackData>.value(
+              _FakeNativeAudioTrackData_1(this, Invocation.method(#getAudioTracks, [])),
             ),
           )
-          as _i4.Future<_i2.PlaybackState>);
+          as _i4.Future<_i2.NativeAudioTrackData>);
+
+  @override
+  _i4.Future<void> selectAudioTrack(int? groupIndex, int? trackIndex) =>
+      (super.noSuchMethod(
+            Invocation.method(#selectAudioTrack, [groupIndex, trackIndex]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
 }

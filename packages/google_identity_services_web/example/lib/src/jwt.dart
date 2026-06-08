@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,8 +42,7 @@ Map<String, Object?>? decodePayload(String? token) {
 Map<String, Object?>? _decodeJwtPayload(String? payload) {
   try {
     // Payload must be normalized before passing it to the codec
-    return _jwtCodec.decode(base64.normalize(payload!))
-        as Map<String, Object?>?;
+    return _jwtCodec.decode(base64.normalize(payload!)) as Map<String, Object?>?;
   } catch (_) {
     // Do nothing, we always return null for any failure.
   }

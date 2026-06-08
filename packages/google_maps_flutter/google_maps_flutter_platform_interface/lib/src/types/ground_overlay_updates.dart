@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,7 @@ class GroundOverlayUpdates extends MapsObjectUpdates<GroundOverlay> {
   Set<GroundOverlay> get groundOverlaysToAdd => objectsToAdd;
 
   /// Set of GroundOverlayIds to be removed in this update.
-  Set<GroundOverlayId> get groundOverlayIdsToRemove =>
-      objectIdsToRemove.cast<GroundOverlayId>();
+  Set<GroundOverlayId> get groundOverlayIdsToRemove => objectIdsToRemove.cast<GroundOverlayId>();
 
   /// Set of GroundOverlays to be changed in this update.
   Set<GroundOverlay> get groundOverlaysToChange => objectsToChange;

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,9 +30,6 @@ Future<void> saveFontToDeviceFileSystem({
 
 /// Stubbed out version of loadFontFromDeviceFileSystem from
 /// `file_io_desktop_and_mobile.dart`.
-Future<ByteData?> loadFontFromDeviceFileSystem({
-  required String name,
-  required String fileHash,
-}) {
+Future<ByteData?> loadFontFromDeviceFileSystem({required String name, required String fileHash}) {
   return Future<ByteData?>.value();
 }

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,7 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/src/event_channel_messages.g.dart',
-    dartOptions: DartOptions(),
+    dartOptions: DartOptions(ignoreLints: false),
     cppOptions: CppOptions(namespace: 'pigeon_example'),
     kotlinOut:
         'android/app/src/main/kotlin/dev/flutter/pigeon_example_app/EventChannelMessages.g.kt',
@@ -30,6 +30,7 @@ class StringEvent extends PlatformEvent {
   StringEvent(this.data);
   String data;
 }
+
 // #enddocregion sealed-definitions
 
 // #docregion event-definitions

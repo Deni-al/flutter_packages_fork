@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,15 +12,10 @@ class AboutPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: BackButton(
-          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
-        ),
+        leading: BackButton(onPressed: () => context.canPop() ? context.pop() : context.go('/')),
       ),
       body: Center(
-        child: Text(
-          'This is a sample app.',
-          style: Theme.of(context).textTheme.displaySmall,
-        ),
+        child: Text('This is a sample app.', style: Theme.of(context).textTheme.displaySmall),
       ),
     );
   }

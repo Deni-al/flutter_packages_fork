@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,10 +43,7 @@ class _SignInScreenState extends State<SignInScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text(
-                'Sign in',
-                style: Theme.of(context).textTheme.headlineMedium,
-              ),
+              Text('Sign in', style: Theme.of(context).textTheme.headlineMedium),
               TextField(
                 decoration: const InputDecoration(labelText: 'Username'),
                 controller: _usernameController,
@@ -61,10 +58,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 child: TextButton(
                   onPressed: () async {
                     widget.onSignIn(
-                      Credentials(
-                        _usernameController.value.text,
-                        _passwordController.value.text,
-                      ),
+                      Credentials(_usernameController.value.text, _passwordController.value.text),
                     );
                   },
                   child: const Text('Sign in'),

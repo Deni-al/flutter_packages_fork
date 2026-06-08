@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,37 +9,32 @@ import 'package:rfw/rfw.dart';
 
 void main() {
   testWidgets('RemoteWidget', (WidgetTester tester) async {
-    final Runtime runtime1 =
-        Runtime()
-          ..update(const LibraryName(<String>['core']), createCoreWidgets())
-          ..update(
-            const LibraryName(<String>['test']),
-            parseLibraryFile('''
+    final runtime1 = Runtime()
+      ..update(const LibraryName(<String>['core']), createCoreWidgets())
+      ..update(
+        const LibraryName(<String>['test']),
+        parseLibraryFile('''
         import core;
         widget root = Placeholder();
       '''),
-          );
+      );
     addTearDown(runtime1.dispose);
-    final Runtime runtime2 =
-        Runtime()
-          ..update(const LibraryName(<String>['core']), createCoreWidgets())
-          ..update(
-            const LibraryName(<String>['test']),
-            parseLibraryFile('''
+    final runtime2 = Runtime()
+      ..update(const LibraryName(<String>['core']), createCoreWidgets())
+      ..update(
+        const LibraryName(<String>['test']),
+        parseLibraryFile('''
         import core;
         widget root = Container();
       '''),
-          );
+      );
     addTearDown(runtime2.dispose);
-    final DynamicContent data = DynamicContent();
+    final data = DynamicContent();
     await tester.pumpWidget(
       RemoteWidget(
         runtime: runtime1,
         data: data,
-        widget: const FullyQualifiedWidgetName(
-          LibraryName(<String>['test']),
-          'root',
-        ),
+        widget: const FullyQualifiedWidgetName(LibraryName(<String>['test']), 'root'),
       ),
     );
     expect(find.byType(RemoteWidget), findsOneWidget);
@@ -50,10 +45,7 @@ void main() {
       RemoteWidget(
         runtime: runtime2,
         data: data,
-        widget: const FullyQualifiedWidgetName(
-          LibraryName(<String>['test']),
-          'root',
-        ),
+        widget: const FullyQualifiedWidgetName(LibraryName(<String>['test']), 'root'),
       ),
     );
     expect(find.byType(RemoteWidget), findsOneWidget);

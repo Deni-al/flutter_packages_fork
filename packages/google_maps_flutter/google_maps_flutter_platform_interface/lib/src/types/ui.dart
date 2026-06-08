@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -87,10 +87,7 @@ class MinMaxZoomPreference {
   final double? maxZoom;
 
   /// Unbounded zooming.
-  static const MinMaxZoomPreference unbounded = MinMaxZoomPreference(
-    null,
-    null,
-  );
+  static const MinMaxZoomPreference unbounded = MinMaxZoomPreference(null, null);
 
   /// Converts this object to something serializable in JSON.
   Object toJson() => <Object?>[minZoom, maxZoom];
@@ -103,9 +100,7 @@ class MinMaxZoomPreference {
     if (runtimeType != other.runtimeType) {
       return false;
     }
-    return other is MinMaxZoomPreference &&
-        minZoom == other.minZoom &&
-        maxZoom == other.maxZoom;
+    return other is MinMaxZoomPreference && minZoom == other.minZoom && maxZoom == other.maxZoom;
   }
 
   @override

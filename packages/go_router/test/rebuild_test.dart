@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,17 +9,12 @@ import 'package:go_router/go_router.dart';
 import 'test_helpers.dart';
 
 void main() {
-  testWidgets('GoRouter.push does not trigger unnecessary rebuilds', (
-    WidgetTester tester,
-  ) async {
-    final List<GoRoute> routes = <GoRoute>[
-      GoRoute(
-        path: '/',
-        builder: (BuildContext context, __) => const HomePage(),
-      ),
+  testWidgets('GoRouter.push does not trigger unnecessary rebuilds', (WidgetTester tester) async {
+    final routes = <GoRoute>[
+      GoRoute(path: '/', builder: (BuildContext context, _) => const HomePage()),
       GoRoute(
         path: '/1',
-        builder: (BuildContext context, __) {
+        builder: (BuildContext context, _) {
           return ElevatedButton(
             onPressed: () {
               context.push('/1');

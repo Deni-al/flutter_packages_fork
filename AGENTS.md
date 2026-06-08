@@ -40,10 +40,15 @@ The primary tool for this repository is `flutter_plugin_tools.dart`.
 
 ### Initial Setup
 
-First, initialize the tooling:
+First, define an environment variable for the repository root directory and initialize the tooling:
 ```bash
-cd $REPO_ROOT/script/tool # $REPO_ROOT is the repository root
-dart pub get
+# Define an environment variable for the repository root.
+export REPO_ROOT=$(pwd)
+
+# Verify that the environment variable is working correctly.
+echo "Repository root directory: $REPO_ROOT"
+
+dart pub get -C $REPO_ROOT/script/tool
 ```
 
 ### Identifying Target Packages
@@ -85,11 +90,9 @@ dart run $REPO_ROOT/script/tool/bin/flutter_plugin_tools.dart update-dependency 
   The tool can also run native and integration tests, but these may require a more complete environment than is available.
 - **Validation**: Run these checks to ensure that changes follow team guidelines:
   ```bash
+  dart run $REPO_ROOT/script/tool/bin/flutter_plugin_tools.dart validate --packages <changed_packages>
   dart run $REPO_ROOT/script/tool/bin/flutter_plugin_tools.dart publish-check --packages <changed_packages>
-  dart run $REPO_ROOT/script/tool/bin/flutter_plugin_tools.dart readme-check --packages <changed_packages>
-  dart run $REPO_ROOT/script/tool/bin/flutter_plugin_tools.dart version-check --packages <changed_packages>
   dart run $REPO_ROOT/script/tool/bin/flutter_plugin_tools.dart license-check
-  dart run $REPO_ROOT/script/tool/bin/flutter_plugin_tools.dart repo-package-info-check
   ```
 
 ### Specialized Workflows

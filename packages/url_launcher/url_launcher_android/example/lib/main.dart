@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,9 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     });
     // Check for Android Custom Tab support.
-    launcher.supportsMode(PreferredLaunchMode.inAppBrowserView).then((
-      bool result,
-    ) {
+    launcher.supportsMode(PreferredLaunchMode.inAppBrowserView).then((bool result) {
       setState(() {
         _hasCustomTabSupport = result;
       });
@@ -64,6 +62,15 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!await launcher.launchUrl(
       url,
       const LaunchOptions(mode: PreferredLaunchMode.externalApplication),
+    )) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
+  Future<void> _launchInNonBrowserExternalApp(String url) async {
+    if (!await launcher.launchUrl(
+      url,
+      const LaunchOptions(mode: PreferredLaunchMode.externalNonBrowserApplication),
     )) {
       throw Exception('Could not launch $url');
     }
@@ -106,9 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
       url,
       const LaunchOptions(
         mode: PreferredLaunchMode.inAppWebView,
-        webViewConfiguration: InAppWebViewConfiguration(
-          enableJavaScript: false,
-        ),
+        webViewConfiguration: InAppWebViewConfiguration(enableJavaScript: false),
       ),
     )) {
       throw Exception('Could not launch $url');
@@ -120,9 +125,7 @@ class _MyHomePageState extends State<MyHomePage> {
       url,
       const LaunchOptions(
         mode: PreferredLaunchMode.inAppWebView,
-        webViewConfiguration: InAppWebViewConfiguration(
-          enableDomStorage: false,
-        ),
+        webViewConfiguration: InAppWebViewConfiguration(enableDomStorage: false),
       ),
     )) {
       throw Exception('Could not launch $url');
@@ -140,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Future<void> _makePhoneCall(String phoneNumber) async {
     // Use `Uri` to ensure that `phoneNumber` is properly URL-encoded.
     // Just using 'tel:$phoneNumber' would create invalid URLs in some cases.
-    final Uri launchUri = Uri(scheme: 'tel', path: phoneNumber);
+    final launchUri = Uri(scheme: 'tel', path: phoneNumber);
     await launcher.launchUrl(launchUri.toString(), const LaunchOptions());
   }
 
@@ -148,7 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     // onPressed calls using this URL are not gated on a 'canLaunch' check
     // because the assumption is that every device can launch a web URL.
-    const String toLaunch = 'https://www.cylog.org/headers/';
+    const toLaunch = 'https://www.cylog.org/headers/';
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
       body: ListView(
@@ -160,82 +163,74 @@ class _MyHomePageState extends State<MyHomePage> {
                 padding: const EdgeInsets.all(16.0),
                 child: TextField(
                   onChanged: (String text) => _phone = text,
-                  decoration: const InputDecoration(
-                    hintText: 'Input the phone number to launch',
-                  ),
+                  decoration: const InputDecoration(hintText: 'Input the phone number to launch'),
                 ),
               ),
               ElevatedButton(
-                onPressed:
-                    _hasCallSupport
-                        ? () => setState(() {
-                          _launched = _makePhoneCall(_phone);
-                        })
-                        : null,
-                child:
-                    _hasCallSupport
-                        ? const Text('Make phone call')
-                        : const Text('Calling not supported'),
+                onPressed: _hasCallSupport
+                    ? () => setState(() {
+                        _launched = _makePhoneCall(_phone);
+                      })
+                    : null,
+                child: _hasCallSupport
+                    ? const Text('Make phone call')
+                    : const Text('Calling not supported'),
               ),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Text(toLaunch),
+              const Padding(padding: EdgeInsets.all(16.0), child: Text(toLaunch)),
+              ElevatedButton(
+                onPressed: () => setState(() {
+                  _launched = _launchInBrowser(toLaunch);
+                }),
+                child: const Text('Launch in browser'),
               ),
               ElevatedButton(
-                onPressed:
-                    _hasCustomTabSupport
-                        ? () => setState(() {
-                          _launched = _launchInBrowser(toLaunch);
-                        })
-                        : null,
-                child: const Text('Launch in browser'),
+                onPressed: () => setState(() {
+                  _launched = _launchInNonBrowserExternalApp(toLaunch);
+                }),
+                child: const Text('Launch in non-browser app'),
               ),
               const Padding(padding: EdgeInsets.all(16.0)),
               ElevatedButton(
-                onPressed:
-                    () => setState(() {
-                      _launched = _launchInCustomTab(toLaunch);
-                    }),
+                onPressed: _hasCustomTabSupport
+                    ? () => setState(() {
+                        _launched = _launchInCustomTab(toLaunch);
+                      })
+                    : null,
                 child: const Text('Launch in Android Custom Tab'),
               ),
               const Padding(padding: EdgeInsets.all(16.0)),
               ElevatedButton(
-                onPressed:
-                    () => setState(() {
-                      _launched = _launchInWebView(toLaunch);
-                    }),
+                onPressed: () => setState(() {
+                  _launched = _launchInWebView(toLaunch);
+                }),
                 child: const Text('Launch in web view'),
               ),
               ElevatedButton(
-                onPressed:
-                    () => setState(() {
-                      _launched = _launchInWebViewWithCustomHeaders(toLaunch);
-                    }),
+                onPressed: () => setState(() {
+                  _launched = _launchInWebViewWithCustomHeaders(toLaunch);
+                }),
                 child: const Text('Launch in web view (Custom headers)'),
               ),
               ElevatedButton(
-                onPressed:
-                    () => setState(() {
-                      _launched = _launchInWebViewWithoutJavaScript(toLaunch);
-                    }),
+                onPressed: () => setState(() {
+                  _launched = _launchInWebViewWithoutJavaScript(toLaunch);
+                }),
                 child: const Text('Launch in web view (JavaScript OFF)'),
               ),
               ElevatedButton(
-                onPressed:
-                    () => setState(() {
-                      _launched = _launchInWebViewWithoutDomStorage(toLaunch);
-                    }),
+                onPressed: () => setState(() {
+                  _launched = _launchInWebViewWithoutDomStorage(toLaunch);
+                }),
                 child: const Text('Launch in web view (DOM storage OFF)'),
               ),
               const Padding(padding: EdgeInsets.all(16.0)),
               ElevatedButton(
-                onPressed:
-                    () => setState(() {
-                      _launched = _launchInWebView(toLaunch);
-                      Timer(const Duration(seconds: 5), () {
-                        launcher.closeWebView();
-                      });
-                    }),
+                onPressed: () => setState(() {
+                  _launched = _launchInWebView(toLaunch);
+                  Timer(const Duration(seconds: 5), () {
+                    launcher.closeWebView();
+                  });
+                }),
                 child: const Text('Launch in web view + close after 5 seconds'),
               ),
               const Padding(padding: EdgeInsets.all(16.0)),

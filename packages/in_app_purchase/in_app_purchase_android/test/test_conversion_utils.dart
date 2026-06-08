@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@ PlatformBillingResult convertToPigeonResult(BillingResultWrapper targetResult) {
   return PlatformBillingResult(
     responseCode: billingResponseFromWrapper(targetResult.responseCode),
     debugMessage: targetResult.debugMessage!,
+    subResponseCode: targetResult.subResponseCode,
   );
 }
 
@@ -34,21 +35,17 @@ PlatformPurchase convertToPigeonPurchase(PurchaseWrapper purchase) {
     purchaseState: _convertToPigeonPurchaseState(purchase.purchaseState),
     // For some reason quantity is not in PurchaseWrapper.
     quantity: 99,
-    accountIdentifiers:
-        purchase.obfuscatedAccountId != null ||
-                purchase.obfuscatedProfileId != null
-            ? PlatformAccountIdentifiers(
-              obfuscatedAccountId: purchase.obfuscatedAccountId,
-              obfuscatedProfileId: purchase.obfuscatedProfileId,
-            )
-            : null,
+    accountIdentifiers: purchase.obfuscatedAccountId != null || purchase.obfuscatedProfileId != null
+        ? PlatformAccountIdentifiers(
+            obfuscatedAccountId: purchase.obfuscatedAccountId,
+            obfuscatedProfileId: purchase.obfuscatedProfileId,
+          )
+        : null,
   );
 }
 
 /// Creates a [PlatformProductDetails] from the corresponding [ProductDetailsWrapper].
-PlatformProductDetails convertToPigeonProductDetails(
-  ProductDetailsWrapper details,
-) {
+PlatformProductDetails convertToPigeonProductDetails(ProductDetailsWrapper details) {
   return PlatformProductDetails(
     description: details.description,
     name: details.name,
@@ -58,10 +55,9 @@ PlatformProductDetails convertToPigeonProductDetails(
     oneTimePurchaseOfferDetails: _convertToPigeonOneTimePurchaseOfferDetails(
       details.oneTimePurchaseOfferDetails,
     ),
-    subscriptionOfferDetails:
-        details.subscriptionOfferDetails
-            ?.map(convertToPigeonSubscriptionOfferDetails)
-            .toList(),
+    subscriptionOfferDetails: details.subscriptionOfferDetails
+        ?.map(convertToPigeonSubscriptionOfferDetails)
+        .toList(),
   );
 }
 
@@ -73,8 +69,7 @@ PlatformSubscriptionOfferDetails convertToPigeonSubscriptionOfferDetails(
     offerId: details.offerId,
     offerToken: details.offerIdToken,
     offerTags: details.offerTags,
-    pricingPhases:
-        details.pricingPhases.map(convertToPigeonPricingPhase).toList(),
+    pricingPhases: details.pricingPhases.map(convertToPigeonPricingPhase).toList(),
   );
 }
 
@@ -89,8 +84,7 @@ PlatformPricingPhase convertToPigeonPricingPhase(PricingPhaseWrapper phase) {
   );
 }
 
-PlatformOneTimePurchaseOfferDetails?
-_convertToPigeonOneTimePurchaseOfferDetails(
+PlatformOneTimePurchaseOfferDetails? _convertToPigeonOneTimePurchaseOfferDetails(
   OneTimePurchaseOfferDetailsWrapper? offer,
 ) {
   if (offer == null) {
@@ -104,9 +98,7 @@ _convertToPigeonOneTimePurchaseOfferDetails(
 }
 
 /// Creates a [PlatformPurchaseState] from the Dart wrapper equivalent.
-PlatformPurchaseState _convertToPigeonPurchaseState(
-  PurchaseStateWrapper state,
-) {
+PlatformPurchaseState _convertToPigeonPurchaseState(PurchaseStateWrapper state) {
   return switch (state) {
     PurchaseStateWrapper.unspecified_state => PlatformPurchaseState.unspecified,
     PurchaseStateWrapper.purchased => PlatformPurchaseState.purchased,
@@ -117,8 +109,7 @@ PlatformPurchaseState _convertToPigeonPurchaseState(
 PlatformRecurrenceMode _convertToPigeonRecurrenceMode(RecurrenceMode mode) {
   return switch (mode) {
     RecurrenceMode.finiteRecurring => PlatformRecurrenceMode.finiteRecurring,
-    RecurrenceMode.infiniteRecurring =>
-      PlatformRecurrenceMode.infiniteRecurring,
+    RecurrenceMode.infiniteRecurring => PlatformRecurrenceMode.infiniteRecurring,
     RecurrenceMode.nonRecurring => PlatformRecurrenceMode.nonRecurring,
   };
 }

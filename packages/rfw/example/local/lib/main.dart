@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,10 +49,7 @@ class _ExampleState extends State<Example> {
   static WidgetLibrary _createLocalWidgets() {
     return LocalWidgetLibrary(<String, LocalWidgetBuilder>{
       'GreenBox': (BuildContext context, DataSource source) {
-        return ColoredBox(
-          color: const Color(0xFF002211),
-          child: source.child(<Object>['child']),
-        );
+        return ColoredBox(color: const Color(0xFF002211), child: source.child(<Object>['child']));
       },
       'Hello': (BuildContext context, DataSource source) {
         return Center(

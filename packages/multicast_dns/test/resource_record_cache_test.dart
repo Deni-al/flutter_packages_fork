@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,7 @@
 
 import 'dart:io';
 
-import 'package:multicast_dns/src/native_protocol_client.dart'
-    show ResourceRecordCache;
+import 'package:multicast_dns/src/native_protocol_client.dart' show ResourceRecordCache;
 import 'package:multicast_dns/src/resource_record.dart';
 import 'package:test/test.dart';
 
@@ -20,11 +19,11 @@ void main() {
 
 void testOverwrite() {
   test('Cache can overwrite entries', () {
-    final InternetAddress ip1 = InternetAddress('192.168.1.1');
-    final InternetAddress ip2 = InternetAddress('192.168.1.2');
+    final ip1 = InternetAddress('192.168.1.1');
+    final ip2 = InternetAddress('192.168.1.2');
     final int valid = DateTime.now().millisecondsSinceEpoch + 86400 * 1000;
 
-    final ResourceRecordCache cache = ResourceRecordCache();
+    final cache = ResourceRecordCache();
 
     // Add two different records.
     cache.updateRecords(<ResourceRecord>[
@@ -49,31 +48,25 @@ void testOverwrite() {
     expect(cache.entryCount, 3);
 
     // Overwrite the two cached entries with one with the same name.
-    cache.updateRecords(<ResourceRecord>[
-      IPAddressResourceRecord('hest', valid, address: ip1),
-    ]);
+    cache.updateRecords(<ResourceRecord>[IPAddressResourceRecord('hest', valid, address: ip1)]);
     expect(cache.entryCount, 2);
   });
 }
 
 void testTimeout() {
   test('Cache can evict records after timeout', () {
-    final InternetAddress ip1 = InternetAddress('192.168.1.1');
+    final ip1 = InternetAddress('192.168.1.1');
     final int valid = DateTime.now().millisecondsSinceEpoch + 86400 * 1000;
     final int notValid = DateTime.now().millisecondsSinceEpoch - 1;
 
-    final ResourceRecordCache cache = ResourceRecordCache();
+    final cache = ResourceRecordCache();
 
-    cache.updateRecords(<ResourceRecord>[
-      IPAddressResourceRecord('hest', valid, address: ip1),
-    ]);
+    cache.updateRecords(<ResourceRecord>[IPAddressResourceRecord('hest', valid, address: ip1)]);
     expect(cache.entryCount, 1);
 
-    cache.updateRecords(<ResourceRecord>[
-      IPAddressResourceRecord('fisk', notValid, address: ip1),
-    ]);
+    cache.updateRecords(<ResourceRecord>[IPAddressResourceRecord('fisk', notValid, address: ip1)]);
 
-    List<ResourceRecord> results = <ResourceRecord>[];
+    var results = <ResourceRecord>[];
     cache.lookup('hest', ResourceRecordType.addressIPv4, results);
     expect(results.isEmpty, isFalse);
 

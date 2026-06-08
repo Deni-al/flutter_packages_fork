@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,9 +20,7 @@ abstract class PointerInterceptorPlatform extends PlatformInterface {
 
   static set instance(PointerInterceptorPlatform? instance) {
     if (instance == null) {
-      throw AssertionError(
-        'Platform interfaces can only be set to a non-null instance',
-      );
+      throw AssertionError('Platform interfaces can only be set to a non-null instance');
     }
 
     PlatformInterface.verify(instance, _token);

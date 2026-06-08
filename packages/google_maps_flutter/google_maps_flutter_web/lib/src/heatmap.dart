@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,7 @@ part of '../google_maps_flutter_web.dart';
 /// The `HeatmapController` class wraps a [visualization.HeatmapLayer] and its `onTap` behavior.
 class HeatmapController {
   /// Creates a `HeatmapController`, which wraps a [visualization.HeatmapLayer] object and its `onTap` behavior.
-  HeatmapController({required visualization.HeatmapLayer heatmap})
-    : _heatmap = heatmap;
+  HeatmapController({required visualization.HeatmapLayer heatmap}) : _heatmap = heatmap;
 
   visualization.HeatmapLayer? _heatmap;
 

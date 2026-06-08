@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ class URLLauncherUITests: XCTestCase {
     let app = self.app!
 
     let buttonNames: [String] = [
-      "Launch in app", "Launch in app(JavaScript ON)", "Launch in app(DOM storage ON)",
+      "Launch in app",
       "Launch a universal link in a native app, fallback to Safari.(Youtube)",
     ]
     for buttonName in buttonNames {

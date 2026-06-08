@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,8 +28,7 @@ class PermissionRequestConstants {
   /// Resource belongs to protected media identifier.
   ///
   /// See https://developer.android.com/reference/android/webkit/PermissionRequest#RESOURCE_VIDEO_CAPTURE.
-  static const String protectedMediaId =
-      'android.webkit.resource.PROTECTED_MEDIA_ID';
+  static const String protectedMediaId = 'android.webkit.resource.PROTECTED_MEDIA_ID';
 }
 
 /// Class constants for [WebViewClient].

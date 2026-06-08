@@ -1,6 +1,19 @@
 ## NEXT
 
-* Updates minimum supported SDK version to Flutter 3.29/Dart 3.7.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 0.9.5
+
+* Adds `getDirectoryPathWithOptions` and `getDirectoryPathsWithOptions` implementations.
+
+## 0.9.4+6
+
+* Updates to Pigeon 26.
+
+## 0.9.4+5
+
+* Updates minimum supported version to macOS 10.15.
+* Updates minimum supported SDK version to Flutter 3.35/Dart 3.9.
 
 ## 0.9.4+4
 

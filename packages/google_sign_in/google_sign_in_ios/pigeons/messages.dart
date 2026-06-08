@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,7 @@ import 'package:pigeon/pigeon.dart';
     dartOut: 'lib/src/messages.g.dart',
     objcHeaderOut:
         'darwin/google_sign_in_ios/Sources/google_sign_in_ios/include/google_sign_in_ios/messages.g.h',
-    objcSourceOut:
-        'darwin/google_sign_in_ios/Sources/google_sign_in_ios/messages.g.m',
+    objcSourceOut: 'darwin/google_sign_in_ios/Sources/google_sign_in_ios/messages.g.m',
     objcOptions: ObjcOptions(
       prefix: 'FSI',
       headerIncludePath: './include/google_sign_in_ios/messages.g.h',
@@ -19,11 +18,7 @@ import 'package:pigeon/pigeon.dart';
   ),
 )
 class PlatformConfigurationParams {
-  PlatformConfigurationParams({
-    this.clientId,
-    this.serverClientId,
-    this.hostedDomain,
-  });
+  PlatformConfigurationParams({this.clientId, this.serverClientId, this.hostedDomain});
 
   final String? clientId;
   final String? serverClientId;
@@ -120,7 +115,8 @@ class SignInSuccess {
 
   late List<String> grantedScopes;
 
-  // This is set only on a new sign in or scope grant, not a restored sign-in.
+  // This is set only on a new sign in or scope grant, not a restored sign-in
+  // or a call to getRefreshedAuthorizationTokens.
   // See https://github.com/google/GoogleSignIn-iOS/issues/202
   String? serverAuthCode;
 }

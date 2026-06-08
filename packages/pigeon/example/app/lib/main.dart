@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@ class _ExampleFlutterApi implements MessageFlutterApi {
     return aString ?? '';
   }
 }
+
 // #enddocregion main-dart-flutter
 
 void main() {
@@ -74,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Sends message through host api using `MessageData` class
   /// and api `sendMessage` method.
   Future<bool> sendMessage(String messageText) {
-    final MessageData message = MessageData(
+    final message = MessageData(
       code: Code.one,
       data: <String, String>{'header': 'this is a header'},
       description: 'uri text',
@@ -86,6 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return Future<bool>(() => true);
     }
   }
+
   // #enddocregion main-dart
 
   // #docregion main-dart-event
@@ -102,6 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
   }
+
   // #enddocregion main-dart-event
 
   @override
@@ -137,10 +140,7 @@ class _MyHomePageState extends State<MyHomePage> {
             if (Platform.isAndroid || Platform.isIOS)
               StreamBuilder<String>(
                 stream: getEventStream(),
-                builder: (
-                  BuildContext context,
-                  AsyncSnapshot<String> snapshot,
-                ) {
+                builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
                   if (snapshot.hasData) {
                     return Text(snapshot.data ?? '');
                   } else {

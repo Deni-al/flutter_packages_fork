@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -46,15 +46,13 @@ class AdSenseCodeParameters {
     String? adFrequencyHint,
   }) : _adSenseCodeParameters = <String, String>{
          if (adHost != null) 'adHost': adHost,
-         if (admobInterstitialSlot != null)
-           'admobInterstitialSlot': admobInterstitialSlot,
+         if (admobInterstitialSlot != null) 'admobInterstitialSlot': admobInterstitialSlot,
          if (admobRewardedSlot != null) 'admobRewardedSlot': admobRewardedSlot,
          if (adChannel != null) 'adChannel': adChannel,
          if (adbreakTest != null) 'adbreakTest': adbreakTest,
          if (tagForChildDirectedTreatment != null)
            'tagForChildDirectedTreatment': tagForChildDirectedTreatment,
-         if (tagForUnderAgeOfConsent != null)
-           'tagForUnderAgeOfConsent': tagForUnderAgeOfConsent,
+         if (tagForUnderAgeOfConsent != null) 'tagForUnderAgeOfConsent': tagForUnderAgeOfConsent,
          if (adFrequencyHint != null) 'adFrequencyHint': adFrequencyHint,
        };
 

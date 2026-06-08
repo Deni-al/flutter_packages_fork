@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -40,6 +40,8 @@ import androidx.credentials.exceptions.NoCredentialException;
 import com.google.android.gms.auth.api.identity.AuthorizationClient;
 import com.google.android.gms.auth.api.identity.AuthorizationRequest;
 import com.google.android.gms.auth.api.identity.AuthorizationResult;
+import com.google.android.gms.auth.api.identity.ClearTokenRequest;
+import com.google.android.gms.auth.api.identity.RevokeAccessRequest;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -65,12 +67,12 @@ public class GoogleSignInTest {
   @Mock ActivityPluginBinding mockActivityPluginBinding;
   @Mock PendingIntent mockAuthorizationIntent;
   @Mock IntentSender mockAuthorizationIntentSender;
-  @Mock AuthorizeResult mockAuthorizeResult;
   @Mock CredentialManager mockCredentialManager;
   @Mock AuthorizationClient mockAuthorizationClient;
   @Mock CustomCredential mockGenericCredential;
   @Mock GoogleIdTokenCredential mockGoogleCredential;
   @Mock Task<AuthorizationResult> mockAuthorizationTask;
+  @Mock Task<Void> mockVoidTask;
 
   private GoogleSignInPlugin flutterPlugin;
   // Technically this is not the plugin, but in practice almost all of the functionality is in this
@@ -88,6 +90,8 @@ public class GoogleSignInTest {
         .thenReturn(GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL);
     when(mockAuthorizationTask.addOnSuccessListener(any())).thenReturn(mockAuthorizationTask);
     when(mockAuthorizationTask.addOnFailureListener(any())).thenReturn(mockAuthorizationTask);
+    when(mockVoidTask.addOnSuccessListener(any())).thenReturn(mockVoidTask);
+    when(mockVoidTask.addOnFailureListener(any())).thenReturn(mockVoidTask);
     when(mockAuthorizationIntent.getIntentSender()).thenReturn(mockAuthorizationIntentSender);
     when(mockActivityPluginBinding.getActivity()).thenReturn(mockActivity);
 
@@ -183,12 +187,12 @@ public class GoogleSignInTest {
     final String displayName = "Jane User";
     final String givenName = "Jane";
     final String familyName = "User";
-    final String id = "someId";
+    final String email = "someEmail";
     final String idToken = "idToken";
     when(mockGoogleCredential.getDisplayName()).thenReturn(displayName);
     when(mockGoogleCredential.getGivenName()).thenReturn(givenName);
     when(mockGoogleCredential.getFamilyName()).thenReturn(familyName);
-    when(mockGoogleCredential.getId()).thenReturn(id);
+    when(mockGoogleCredential.getEmail()).thenReturn(email);
     when(mockGoogleCredential.getIdToken()).thenReturn(idToken);
 
     final Boolean[] callbackCalled = new Boolean[1];
@@ -206,7 +210,7 @@ public class GoogleSignInTest {
               assertEquals(displayName, credential.getDisplayName());
               assertEquals(givenName, credential.getGivenName());
               assertEquals(familyName, credential.getFamilyName());
-              assertEquals(id, credential.getId());
+              assertEquals(email, credential.getEmail());
               assertEquals(idToken, credential.getIdToken());
               return null;
             }));
@@ -829,8 +833,7 @@ public class GoogleSignInTest {
 
     callbackCaptor
         .getValue()
-        .onSuccess(
-            new AuthorizationResult(serverAuthCode, accessToken, "idToken", scopes, null, null));
+        .onSuccess(mockSuccessAuthorizationResult(serverAuthCode, accessToken, scopes));
     assertTrue(callbackCalled[0]);
   }
 
@@ -890,10 +893,7 @@ public class GoogleSignInTest {
         ArgumentCaptor.forClass(OnSuccessListener.class);
     verify(mockAuthorizationTask).addOnSuccessListener(callbackCaptor.capture());
 
-    callbackCaptor
-        .getValue()
-        .onSuccess(
-            new AuthorizationResult(null, null, null, scopes, null, mockAuthorizationIntent));
+    callbackCaptor.getValue().onSuccess(mockResolutionAuthorizationResult(mockAuthorizationIntent));
     assertTrue(callbackCalled[0]);
   }
 
@@ -927,10 +927,7 @@ public class GoogleSignInTest {
         ArgumentCaptor.forClass(OnSuccessListener.class);
     verify(mockAuthorizationTask).addOnSuccessListener(callbackCaptor.capture());
 
-    callbackCaptor
-        .getValue()
-        .onSuccess(
-            new AuthorizationResult(null, null, null, scopes, null, mockAuthorizationIntent));
+    callbackCaptor.getValue().onSuccess(mockResolutionAuthorizationResult(mockAuthorizationIntent));
     assertTrue(callbackCalled[0]);
   }
 
@@ -943,10 +940,11 @@ public class GoogleSignInTest {
     final String accessToken = "accessToken";
     final String serverAuthCode = "serverAuthCode";
     when(mockAuthorizationClient.authorize(any())).thenReturn(mockAuthorizationTask);
+    AuthorizationResult successResult =
+        mockSuccessAuthorizationResult(serverAuthCode, accessToken, scopes);
     try {
       when(mockAuthorizationClient.getAuthorizationResultFromIntent(any()))
-          .thenReturn(
-              new AuthorizationResult(serverAuthCode, accessToken, "idToken", scopes, null, null));
+          .thenReturn(successResult);
     } catch (ApiException e) {
       fail();
     }
@@ -973,10 +971,7 @@ public class GoogleSignInTest {
     ArgumentCaptor<OnSuccessListener<AuthorizationResult>> callbackCaptor =
         ArgumentCaptor.forClass(OnSuccessListener.class);
     verify(mockAuthorizationTask).addOnSuccessListener(callbackCaptor.capture());
-    callbackCaptor
-        .getValue()
-        .onSuccess(
-            new AuthorizationResult(null, null, null, scopes, null, mockAuthorizationIntent));
+    callbackCaptor.getValue().onSuccess(mockResolutionAuthorizationResult(mockAuthorizationIntent));
     try {
       verify(mockActivity)
           .startIntentSenderForResult(
@@ -1040,10 +1035,7 @@ public class GoogleSignInTest {
     ArgumentCaptor<OnSuccessListener<AuthorizationResult>> callbackCaptor =
         ArgumentCaptor.forClass(OnSuccessListener.class);
     verify(mockAuthorizationTask).addOnSuccessListener(callbackCaptor.capture());
-    callbackCaptor
-        .getValue()
-        .onSuccess(
-            new AuthorizationResult(null, null, null, scopes, null, mockAuthorizationIntent));
+    callbackCaptor.getValue().onSuccess(mockResolutionAuthorizationResult(mockAuthorizationIntent));
 
     assertTrue(callbackCalled[0]);
   }
@@ -1083,10 +1075,7 @@ public class GoogleSignInTest {
     ArgumentCaptor<OnSuccessListener<AuthorizationResult>> callbackCaptor =
         ArgumentCaptor.forClass(OnSuccessListener.class);
     verify(mockAuthorizationTask).addOnSuccessListener(callbackCaptor.capture());
-    callbackCaptor
-        .getValue()
-        .onSuccess(
-            new AuthorizationResult(null, null, null, scopes, null, mockAuthorizationIntent));
+    callbackCaptor.getValue().onSuccess(mockResolutionAuthorizationResult(mockAuthorizationIntent));
     try {
       verify(mockActivity)
           .startIntentSenderForResult(
@@ -1143,5 +1132,77 @@ public class GoogleSignInTest {
             any(ClearCredentialStateRequest.class), any(), any(), callbackCaptor.capture());
 
     callbackCaptor.getValue().onError(mock(ClearCredentialException.class));
+  }
+
+  @Test
+  public void revokeAccess_callsClient() {
+    final List<String> scopes = new ArrayList<>(List.of("openid"));
+    final String accountEmail = "someone@example.com";
+    PlatformRevokeAccessRequest params = new PlatformRevokeAccessRequest(accountEmail, scopes);
+    when(mockAuthorizationClient.revokeAccess(any())).thenReturn(mockVoidTask);
+    plugin.revokeAccess(
+        params,
+        ResultCompat.asCompatCallback(
+            reply -> {
+              return null;
+            }));
+
+    ArgumentCaptor<RevokeAccessRequest> requestCaptor =
+        ArgumentCaptor.forClass(RevokeAccessRequest.class);
+    verify(mockAuthorizationClient).revokeAccess(requestCaptor.capture());
+
+    @SuppressWarnings("unchecked")
+    ArgumentCaptor<OnSuccessListener<Void>> callbackCaptor =
+        ArgumentCaptor.forClass(OnSuccessListener.class);
+    verify(mockVoidTask).addOnSuccessListener(callbackCaptor.capture());
+    callbackCaptor.getValue().onSuccess(null);
+
+    RevokeAccessRequest request = requestCaptor.getValue();
+    assertEquals(scopes.size(), request.getScopes().size());
+    assertEquals(scopes.get(0), request.getScopes().get(0).getScopeUri());
+    // Account is mostly opaque, so just verify that one was set.
+    assertNotNull(request.getAccount());
+  }
+
+  @Test
+  public void clearAuthorizationToken_callsClient() {
+    final String testToken = "testToken";
+    when(mockAuthorizationClient.clearToken(any())).thenReturn(mockVoidTask);
+    plugin.clearAuthorizationToken(
+        testToken,
+        ResultCompat.asCompatCallback(
+            reply -> {
+              return null;
+            }));
+
+    ArgumentCaptor<ClearTokenRequest> authRequestCaptor =
+        ArgumentCaptor.forClass(ClearTokenRequest.class);
+    verify(mockAuthorizationClient).clearToken(authRequestCaptor.capture());
+
+    @SuppressWarnings("unchecked")
+    ArgumentCaptor<OnSuccessListener<Void>> callbackCaptor =
+        ArgumentCaptor.forClass(OnSuccessListener.class);
+    verify(mockVoidTask).addOnSuccessListener(callbackCaptor.capture());
+    callbackCaptor.getValue().onSuccess(null);
+
+    ClearTokenRequest request = authRequestCaptor.getValue();
+    assertEquals(testToken, request.getToken());
+  }
+
+  private AuthorizationResult mockSuccessAuthorizationResult(
+      String serverAuthCode, String accessToken, List<String> scopes) {
+    AuthorizationResult mockResult = mock(AuthorizationResult.class);
+    when(mockResult.hasResolution()).thenReturn(false);
+    when(mockResult.getAccessToken()).thenReturn(accessToken);
+    when(mockResult.getServerAuthCode()).thenReturn(serverAuthCode);
+    when(mockResult.getGrantedScopes()).thenReturn(scopes);
+    return mockResult;
+  }
+
+  private AuthorizationResult mockResolutionAuthorizationResult(PendingIntent pendingIntent) {
+    AuthorizationResult mockResult = mock(AuthorizationResult.class);
+    when(mockResult.hasResolution()).thenReturn(true);
+    when(mockResult.getPendingIntent()).thenReturn(pendingIntent);
+    return mockResult;
   }
 }

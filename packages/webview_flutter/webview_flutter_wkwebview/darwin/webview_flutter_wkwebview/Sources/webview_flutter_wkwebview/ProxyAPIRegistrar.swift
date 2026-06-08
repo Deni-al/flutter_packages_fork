@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -78,9 +78,10 @@ open class ProxyAPIRegistrar: WebKitLibraryPigeonProxyApiRegistrar {
 
   /// Handles calling a Flutter method on the main thread.
   func dispatchOnMainThread(
-    execute work: @escaping (
-      _ onFailure: @escaping (_ methodName: String, _ error: PigeonError) -> Void
-    ) -> Void
+    execute work:
+      @escaping (
+        _ onFailure: @escaping (_ methodName: String, _ error: PigeonError) -> Void
+      ) -> Void
   ) {
     DispatchQueue.main.async {
       work { methodName, error in
@@ -300,5 +301,9 @@ class ProxyAPIDelegate: WebKitLibraryPigeonProxyApiDelegate {
   {
     return PigeonApiSecCertificate(
       pigeonRegistrar: registrar, delegate: SecCertificateProxyAPIDelegate())
+  }
+
+  func pigeonApiUIColor(_ registrar: WebKitLibraryPigeonProxyApiRegistrar) -> PigeonApiUIColor {
+    return PigeonApiUIColor(pigeonRegistrar: registrar, delegate: ColorProxyAPIDelegate())
   }
 }

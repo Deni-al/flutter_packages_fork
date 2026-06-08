@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,7 +24,7 @@ void testValidPackages() {
     List<ResourceRecord> result = decodeMDnsResponse(package1)!;
     expect(result, isNotNull);
     expect(result.length, 1);
-    IPAddressResourceRecord ipResult = result[0] as IPAddressResourceRecord;
+    var ipResult = result[0] as IPAddressResourceRecord;
     expect(ipResult.name, 'raspberrypi.local');
     expect(ipResult.address.address, '192.168.1.191');
 
@@ -58,11 +58,7 @@ void testValidPackages() {
         priority: 0,
         weight: 0,
       ),
-      TxtResourceRecord(
-        'raspberrypi._udisks-ssh._tcp.local',
-        result[3].validUntil,
-        text: '',
-      ),
+      TxtResourceRecord('raspberrypi._udisks-ssh._tcp.local', result[3].validUntil, text: ''),
       PtrResourceRecord(
         '_services._dns-sd._udp.local',
         result[4].validUntil,
@@ -129,8 +125,7 @@ void testValidPackages() {
 
   // Fixes https://github.com/flutter/flutter/issues/31854
   test('Can decode packages with question, answer and additional', () {
-    final List<ResourceRecord> result =
-        decodeMDnsResponse(packetWithQuestionAnArCount)!;
+    final List<ResourceRecord> result = decodeMDnsResponse(packetWithQuestionAnArCount)!;
     expect(result, isNotNull);
     expect(result.length, 2);
     expect(result, <ResourceRecord>[
@@ -148,27 +143,23 @@ void testValidPackages() {
   });
 
   // Fixes https://github.com/flutter/flutter/issues/31854
-  test(
-    'Can decode packages without question and with answer and additional',
-    () {
-      final List<ResourceRecord> result =
-          decodeMDnsResponse(packetWithoutQuestionWithAnArCount)!;
-      expect(result, isNotNull);
-      expect(result.length, 2);
-      expect(result, <ResourceRecord>[
-        PtrResourceRecord(
-          '_______________.____._____',
-          result[0].validUntil,
-          domainName: '______________________._______________.____._____',
-        ),
-        TxtResourceRecord(
-          '______________________.____________.____._____',
-          result[1].validUntil,
-          text: 'model=MacBookPro14,3\nosxvers=18\necolor=225,225,223\n',
-        ),
-      ]);
-    },
-  );
+  test('Can decode packages without question and with answer and additional', () {
+    final List<ResourceRecord> result = decodeMDnsResponse(packetWithoutQuestionWithAnArCount)!;
+    expect(result, isNotNull);
+    expect(result.length, 2);
+    expect(result, <ResourceRecord>[
+      PtrResourceRecord(
+        '_______________.____._____',
+        result[0].validUntil,
+        domainName: '______________________._______________.____._____',
+      ),
+      TxtResourceRecord(
+        '______________________.____________.____._____',
+        result[1].validUntil,
+        text: 'model=MacBookPro14,3\nosxvers=18\necolor=225,225,223\n',
+      ),
+    ]);
+  });
 
   test('Can decode packages with a long text resource', () {
     final List<ResourceRecord> result = decodeMDnsResponse(packetWithLongTxt)!;
@@ -191,8 +182,8 @@ void testValidPackages() {
 
 void testBadPackages() {
   test('Returns null for invalid packets', () {
-    for (final List<int> p in <List<int>>[package1, package2, package3]) {
-      for (int i = 0; i < p.length; i++) {
+    for (final p in <List<int>>[package1, package2, package3]) {
+      for (var i = 0; i < p.length; i++) {
         expect(decodeMDnsResponse(p.sublist(0, i)), isNull);
       }
     }
@@ -205,10 +196,7 @@ void testBadPackages() {
 
 void testPTRRData() {
   test('Can read FQDN from PTR data', () {
-    expect(
-      'sgjesse-macbookpro2 [78:31:c1:b8:55:38]._workstation._tcp.local',
-      readFQDN(ptrRData),
-    );
+    expect('sgjesse-macbookpro2 [78:31:c1:b8:55:38]._workstation._tcp.local', readFQDN(ptrRData));
     expect('fletch-agent._fletch_agent._tcp.local', readFQDN(ptrRData2));
   });
 }
@@ -224,7 +212,7 @@ void testNonUtf8DomainName() {
     final List<ResourceRecord> result = decodeMDnsResponse(nonUtf8Package)!;
     expect(result, isNotNull);
     expect(result[0] is TxtResourceRecord, isTrue);
-    final TxtResourceRecord txt = result[0] as TxtResourceRecord;
+    final txt = result[0] as TxtResourceRecord;
     expect(txt.name, contains('�'));
   });
 }

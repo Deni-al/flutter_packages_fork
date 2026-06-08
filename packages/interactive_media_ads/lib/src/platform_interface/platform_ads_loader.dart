@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,8 +81,7 @@ abstract base class PlatformAdsLoader {
       'unit testing, `InteractiveMediaAdsPlatform.instance` can be set with '
       'your own test implementation.',
     );
-    final PlatformAdsLoader implementation = InteractiveMediaAdsPlatform
-        .instance!
+    final PlatformAdsLoader implementation = InteractiveMediaAdsPlatform.instance!
         .createPlatformAdsLoader(params);
     return implementation;
   }

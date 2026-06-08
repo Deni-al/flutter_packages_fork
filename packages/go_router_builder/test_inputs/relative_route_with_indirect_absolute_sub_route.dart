@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,19 +9,15 @@ mixin $ShellRoute {}
 mixin $RelativeRoute {}
 mixin $AbsoluteRoute {}
 
-@TypedGoRoute<HomeRoute>(
-  path: '/',
-  routes: <TypedRoute<RouteData>>[relativeRoute],
-)
+@TypedGoRoute<HomeRoute>(path: '/', routes: <TypedRoute<RouteData>>[relativeRoute])
 class HomeRoute extends GoRouteData with $HomeRoute {
   const HomeRoute();
 }
 
-const TypedRelativeGoRoute<RelativeRoute> relativeRoute =
-    TypedRelativeGoRoute<RelativeRoute>(
-      path: 'relative-route',
-      routes: <TypedRoute<RouteData>>[shellRoute],
-    );
+const TypedRelativeGoRoute<RelativeRoute> relativeRoute = TypedRelativeGoRoute<RelativeRoute>(
+  path: 'relative-route',
+  routes: <TypedRoute<RouteData>>[shellRoute],
+);
 
 const TypedShellRoute<ShellRoute> shellRoute = TypedShellRoute<ShellRoute>(
   routes: <TypedRoute<RouteData>>[absoluteRoute],

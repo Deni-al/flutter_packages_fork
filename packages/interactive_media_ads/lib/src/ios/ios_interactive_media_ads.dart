@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -59,16 +59,12 @@ final class IOSInteractiveMediaAds extends InteractiveMediaAdsPlatform {
   }
 
   @override
-  IOSCompanionAdSlot createPlatformCompanionAdSlot(
-    PlatformCompanionAdSlotCreationParams params,
-  ) {
+  IOSCompanionAdSlot createPlatformCompanionAdSlot(PlatformCompanionAdSlotCreationParams params) {
     return IOSCompanionAdSlot(params);
   }
 
   @override
-  IOSImaSettings createPlatformImaSettings(
-    PlatformImaSettingsCreationParams params,
-  ) {
+  IOSImaSettings createPlatformImaSettings(PlatformImaSettingsCreationParams params) {
     return IOSImaSettings(params);
   }
 }

@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -304,9 +304,7 @@ enum UIElementType {
 /// view and companion ad slots used for ad playback.
 ///
 /// See https://developers.google.com/ad-manager/dynamic-ad-insertion/sdk/ios/reference/Classes/IMAAdDisplayContainer.
-@ProxyApi(
-  swiftOptions: SwiftProxyApiOptions(import: 'GoogleInteractiveMediaAds'),
-)
+@ProxyApi(swiftOptions: SwiftProxyApiOptions(import: 'GoogleInteractiveMediaAds'))
 abstract class IMAAdDisplayContainer extends NSObject {
   /// Initializes IMAAdDisplayContainer for rendering the ad and displaying the
   /// sad UI.
@@ -579,14 +577,10 @@ abstract class IMAAdsLoaderDelegate extends NSObject {
   IMAAdsLoaderDelegate();
 
   /// Called when ads are successfully loaded from the ad servers by the loader.
-  late final void Function(IMAAdsLoader loader, IMAAdsLoadedData adsLoadedData)
-  adLoaderLoadedWith;
+  late final void Function(IMAAdsLoader loader, IMAAdsLoadedData adsLoadedData) adLoaderLoadedWith;
 
   /// Error reported by the ads loader when loading or requesting an ad fails.
-  late final void Function(
-    IMAAdsLoader loader,
-    IMAAdLoadingErrorData adErrorData,
-  )
+  late final void Function(IMAAdsLoader loader, IMAAdLoadingErrorData adErrorData)
   adsLoaderFailedWithErrorData;
 }
 
@@ -630,6 +624,12 @@ abstract class IMAAdError extends NSObject {
 /// See https://developers.google.com/interactive-media-ads/docs/sdks/ios/client-side/reference/Classes/IMAAdsManager.html.
 @ProxyApi()
 abstract class IMAAdsManager extends NSObject {
+  /// List of content time offsets at which ad breaks are scheduled.
+  ///
+  /// List of double values in seconds. Empty list for single ads or if no ad
+  /// breaks are scheduled.
+  late List<double> adCuePoints;
+
   /// The `IMAAdsManagerDelegate` to notify with events during ad playback.
   void setDelegate(IMAAdsManagerDelegate? delegate);
 
@@ -664,12 +664,10 @@ abstract class IMAAdsManagerDelegate extends NSObject {
   IMAAdsManagerDelegate();
 
   /// Called when there is an IMAAdEvent.
-  late final void Function(IMAAdsManager adsManager, IMAAdEvent event)
-  didReceiveAdEvent;
+  late final void Function(IMAAdsManager adsManager, IMAAdEvent event) didReceiveAdEvent;
 
   /// Called when there was an error playing the ad.
-  late final void Function(IMAAdsManager adsManager, IMAAdError error)
-  didReceiveAdError;
+  late final void Function(IMAAdsManager adsManager, IMAAdError error) didReceiveAdError;
 
   /// Called when an ad is ready to play.
   late final void Function(IMAAdsManager adsManager) didRequestContentPause;
@@ -829,8 +827,7 @@ abstract class IMACompanionDelegate extends NSObject {
   IMACompanionDelegate();
 
   /// Called when the slot is either filled or not filled.
-  late void Function(IMACompanionAdSlot slot, bool filled)?
-  companionAdSlotFilled;
+  late void Function(IMACompanionAdSlot slot, bool filled)? companionAdSlotFilled;
 
   /// Called when the slot is clicked on by the user and will successfully
   /// navigate away.
@@ -840,9 +837,7 @@ abstract class IMACompanionDelegate extends NSObject {
 /// Simple data object containing podding metadata.
 ///
 /// See https://developers.google.com/interactive-media-ads/docs/sdks/ios/client-side/reference/Classes/IMAAdPodInfo.html.
-@ProxyApi(
-  swiftOptions: SwiftProxyApiOptions(import: 'GoogleInteractiveMediaAds'),
-)
+@ProxyApi(swiftOptions: SwiftProxyApiOptions(import: 'GoogleInteractiveMediaAds'))
 abstract class IMAAdPodInfo extends NSObject {
   /// The position of this ad within an ad pod.
   ///
@@ -889,9 +884,7 @@ abstract class IMAAdPodInfo extends NSObject {
 /// Data object representing a single ad.
 ///
 /// See https://developers.google.com/interactive-media-ads/docs/sdks/ios/client-side/reference/Classes/IMAAd.
-@ProxyApi(
-  swiftOptions: SwiftProxyApiOptions(import: 'GoogleInteractiveMediaAds'),
-)
+@ProxyApi(swiftOptions: SwiftProxyApiOptions(import: 'GoogleInteractiveMediaAds'))
 abstract class IMAAd extends NSObject {
   /// The ad ID as specified in the VAST response.
   late final String adId;
@@ -1002,9 +995,7 @@ abstract class IMAAd extends NSObject {
 /// Simple data object containing universal ad ID information.
 ///
 /// See https://developers.google.com/interactive-media-ads/docs/sdks/ios/client-side/reference/Classes/IMAUniversalAdID.html.
-@ProxyApi(
-  swiftOptions: SwiftProxyApiOptions(import: 'GoogleInteractiveMediaAds'),
-)
+@ProxyApi(swiftOptions: SwiftProxyApiOptions(import: 'GoogleInteractiveMediaAds'))
 abstract class IMAUniversalAdID extends NSObject {
   /// The universal ad ID value.
   ///

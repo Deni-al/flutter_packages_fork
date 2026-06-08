@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,8 +14,7 @@ const CameraPosition _kInitialPosition = CameraPosition(
 );
 
 class MapCoordinatesPage extends GoogleMapExampleAppPage {
-  const MapCoordinatesPage({Key? key})
-    : super(const Icon(Icons.map), 'Map coordinates', key: key);
+  const MapCoordinatesPage({super.key}) : super(const Icon(Icons.map), 'Map coordinates');
 
   @override
   Widget build(BuildContext context) {
@@ -41,11 +40,10 @@ class _MapCoordinatesBodyState extends State<_MapCoordinatesBody> {
 
   @override
   Widget build(BuildContext context) {
-    final GoogleMap googleMap = GoogleMap(
+    final googleMap = GoogleMap(
       onMapCreated: onMapCreated,
       initialCameraPosition: _kInitialPosition,
-      onCameraIdle:
-          _updateVisibleRegion, // https://github.com/flutter/flutter/issues/54758
+      onCameraIdle: _updateVisibleRegion, // https://github.com/flutter/flutter/issues/54758
     );
 
     return NotificationListener<ScrollNotification>(
@@ -57,9 +55,7 @@ class _MapCoordinatesBodyState extends State<_MapCoordinatesBody> {
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(10.0),
-            child: Center(
-              child: SizedBox(width: 300.0, height: 200.0, child: googleMap),
-            ),
+            child: Center(child: SizedBox(width: 300.0, height: 200.0, child: googleMap)),
           ),
           if (mapController != null)
             Center(

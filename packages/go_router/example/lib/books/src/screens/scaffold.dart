@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,11 +22,7 @@ enum ScaffoldTab {
 /// The scaffold for the book store.
 class BookstoreScaffold extends StatelessWidget {
   /// Creates a [BookstoreScaffold].
-  const BookstoreScaffold({
-    required this.selectedTab,
-    required this.child,
-    super.key,
-  });
+  const BookstoreScaffold({required this.selectedTab, required this.child, super.key});
 
   /// Which tab of the scaffold to display.
   final ScaffoldTab selectedTab;

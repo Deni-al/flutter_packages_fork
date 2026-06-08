@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,20 +27,12 @@ extension NonStandardGettersOnMediaElement on web.HTMLMediaElement {
 @JS('Object')
 extension type DomObject._(JSAny _) {
   @JS('defineProperty')
-  external static void _defineProperty(
-    JSAny? object,
-    JSString property,
-    Descriptor value,
-  );
+  external static void _defineProperty(JSAny? object, JSString property, Descriptor value);
 
   /// `Object.defineProperty`.
   ///
   /// See: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
-  static void defineProperty(
-    JSObject object,
-    String property,
-    Descriptor descriptor,
-  ) {
+  static void defineProperty(JSObject object, String property, Descriptor descriptor) {
     return _defineProperty(object, property.toJS, descriptor);
   }
 }
@@ -54,10 +46,8 @@ extension type Descriptor._(JSObject _) implements JSObject {
       Descriptor._data(writable: writable?.toJS, value: value.jsify());
 
   /// Builds an "accessor descriptor".
-  factory Descriptor.accessor({
-    void Function(JSAny? value)? set,
-    JSAny? Function()? get,
-  }) => Descriptor._accessor(set: set?.toJS, get: get?.toJS);
+  factory Descriptor.accessor({void Function(JSAny? value)? set, JSAny? Function()? get}) =>
+      Descriptor._accessor(set: set?.toJS, get: get?.toJS);
 
   external factory Descriptor._accessor({
     // JSBoolean configurable,

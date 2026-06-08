@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -42,7 +42,7 @@ class PrimitiveTest {
     }
 
     verify { binaryMessenger.setMessageHandler(channelName, handlerSlot.captured) }
-    verify { api.anInt(input.toLong()) }
+    verify { api.anInt(input) }
   }
 
   @Test

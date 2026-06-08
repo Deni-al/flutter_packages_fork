@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -83,8 +83,7 @@ abstract class UrlLauncherPlatform extends PlatformInterface {
       useWebView: useWebView,
       enableJavaScript: options.webViewConfiguration.enableJavaScript,
       enableDomStorage: options.webViewConfiguration.enableDomStorage,
-      universalLinksOnly:
-          options.mode == PreferredLaunchMode.externalNonBrowserApplication,
+      universalLinksOnly: options.mode == PreferredLaunchMode.externalNonBrowserApplication,
       headers: options.webViewConfiguration.headers,
       webOnlyWindowName: options.webOnlyWindowName,
     );

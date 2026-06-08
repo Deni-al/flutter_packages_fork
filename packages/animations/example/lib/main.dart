@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -122,11 +122,7 @@ class _TransitionsHomePageState extends State<_TransitionsHomePage> {
 }
 
 class _TransitionListTile extends StatelessWidget {
-  const _TransitionListTile({
-    this.onTap,
-    required this.title,
-    required this.subtitle,
-  });
+  const _TransitionListTile({this.onTap, required this.title, required this.subtitle});
 
   final GestureTapCallback? onTap;
   final String title;

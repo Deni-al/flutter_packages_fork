@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,11 +44,8 @@ class GooglePlayUserChoiceDetails {
   }
 
   @override
-  int get hashCode => Object.hash(
-    originalExternalTransactionId,
-    externalTransactionToken,
-    products.hashCode,
-  );
+  int get hashCode =>
+      Object.hash(originalExternalTransactionId, externalTransactionToken, products.hashCode);
 }
 
 /// Data structure representing a UserChoiceDetails product.

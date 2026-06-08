@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,7 @@ import 'dart:async';
 import '../core/js_interop/adsbygoogle.dart';
 import 'h5_js_interop.dart';
 
-export 'enums.dart'
-    show BreakFormat, BreakStatus, BreakType, PreloadAdBreaks, SoundEnabled;
+export 'enums.dart' show BreakFormat, BreakStatus, BreakType, PreloadAdBreaks, SoundEnabled;
 export 'h5_js_interop.dart'
     show
         AdBreakDonePlacementInfo,

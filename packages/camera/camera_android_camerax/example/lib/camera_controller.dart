@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,10 +28,6 @@ Future<List<CameraDescription>> availableCameras() async {
   return CameraPlatform.instance.availableCameras();
 }
 
-// TODO(stuartmorgan): Remove this once the package requires 2.10, where the
-// dart:async `unawaited` accepts a nullable future.
-void _unawaited(Future<void>? future) {}
-
 /// The state of a [CameraController].
 class CameraValue {
   /// Creates a new camera controller state.
@@ -49,6 +45,7 @@ class CameraValue {
     required this.exposurePointSupported,
     required this.focusPointSupported,
     required this.deviceOrientation,
+    required this.description,
     this.lockedCaptureOrientation,
     this.recordingOrientation,
     this.isPreviewPaused = false,
@@ -56,7 +53,7 @@ class CameraValue {
   }) : _isRecordingPaused = isRecordingPaused;
 
   /// Creates a new camera controller state for an uninitialized controller.
-  const CameraValue.uninitialized()
+  const CameraValue.uninitialized(CameraDescription description)
     : this(
         isInitialized: false,
         isRecordingVideo: false,
@@ -70,6 +67,7 @@ class CameraValue {
         focusPointSupported: false,
         deviceOrientation: DeviceOrientation.portraitUp,
         isPreviewPaused: false,
+        description: description,
       );
 
   /// True after [CameraController.initialize] has completed successfully.
@@ -143,6 +141,9 @@ class CameraValue {
   /// The orientation of the currently running video recording.
   final DeviceOrientation? recordingOrientation;
 
+  /// The properties of the camera device controlled by this controller.
+  final CameraDescription description;
+
   /// Creates a modified copy of the object.
   ///
   /// Explicitly specified fields get the specified value, all other fields get
@@ -164,6 +165,7 @@ class CameraValue {
     Optional<DeviceOrientation>? lockedCaptureOrientation,
     Optional<DeviceOrientation>? recordingOrientation,
     bool? isPreviewPaused,
+    CameraDescription? description,
     Optional<DeviceOrientation>? previewPauseOrientation,
   }) {
     return CameraValue(
@@ -177,23 +179,20 @@ class CameraValue {
       flashMode: flashMode ?? this.flashMode,
       exposureMode: exposureMode ?? this.exposureMode,
       focusMode: focusMode ?? this.focusMode,
-      exposurePointSupported:
-          exposurePointSupported ?? this.exposurePointSupported,
+      exposurePointSupported: exposurePointSupported ?? this.exposurePointSupported,
       focusPointSupported: focusPointSupported ?? this.focusPointSupported,
       deviceOrientation: deviceOrientation ?? this.deviceOrientation,
-      lockedCaptureOrientation:
-          lockedCaptureOrientation == null
-              ? this.lockedCaptureOrientation
-              : lockedCaptureOrientation.orNull,
-      recordingOrientation:
-          recordingOrientation == null
-              ? this.recordingOrientation
-              : recordingOrientation.orNull,
+      lockedCaptureOrientation: lockedCaptureOrientation == null
+          ? this.lockedCaptureOrientation
+          : lockedCaptureOrientation.orNull,
+      recordingOrientation: recordingOrientation == null
+          ? this.recordingOrientation
+          : recordingOrientation.orNull,
       isPreviewPaused: isPreviewPaused ?? this.isPreviewPaused,
-      previewPauseOrientation:
-          previewPauseOrientation == null
-              ? this.previewPauseOrientation
-              : previewPauseOrientation.orNull,
+      description: description ?? this.description,
+      previewPauseOrientation: previewPauseOrientation == null
+          ? this.previewPauseOrientation
+          : previewPauseOrientation.orNull,
     );
   }
 
@@ -214,7 +213,8 @@ class CameraValue {
         'lockedCaptureOrientation: $lockedCaptureOrientation, '
         'recordingOrientation: $recordingOrientation, '
         'isPreviewPaused: $isPreviewPaused, '
-        'previewPausedOrientation: $previewPauseOrientation)';
+        'previewPausedOrientation: $previewPauseOrientation, '
+        'description: $description)';
   }
 }
 
@@ -227,14 +227,11 @@ class CameraValue {
 /// To show the camera preview on the screen use a [CameraPreview] widget.
 class CameraController extends ValueNotifier<CameraValue> {
   /// Creates a new camera controller in an uninitialized state.
-  CameraController(
-    this.description, {
-    this.mediaSettings,
-    this.imageFormatGroup,
-  }) : super(const CameraValue.uninitialized());
+  CameraController(CameraDescription description, {this.mediaSettings, this.imageFormatGroup})
+    : super(CameraValue.uninitialized(description));
 
   /// The properties of the camera device controlled by this controller.
-  final CameraDescription description;
+  CameraDescription get description => value.description;
 
   /// The media settings this controller is targeting.
   ///
@@ -257,8 +254,7 @@ class CameraController extends ValueNotifier<CameraValue> {
   bool _isDisposed = false;
   StreamSubscription<CameraImageData>? _imageStreamSubscription;
   FutureOr<bool>? _initCalled;
-  StreamSubscription<DeviceOrientationChangedEvent>?
-  _deviceOrientationSubscription;
+  StreamSubscription<DeviceOrientationChangedEvent>? _deviceOrientationSubscription;
 
   /// Checks whether [CameraController.dispose] has completed successfully.
   ///
@@ -273,7 +269,12 @@ class CameraController extends ValueNotifier<CameraValue> {
   /// Initializes the camera on the device.
   ///
   /// Throws a [CameraException] if the initialization fails.
-  Future<void> initialize() async {
+  Future<void> initialize() => _initializeWithDescription(description);
+
+  /// Initializes the camera on the device with the specified description.
+  ///
+  /// Throws a [CameraException] if the initialization fails.
+  Future<void> _initializeWithDescription(CameraDescription description) async {
     if (_isDisposed) {
       throw CameraException(
         'Disposed CameraController',
@@ -281,21 +282,20 @@ class CameraController extends ValueNotifier<CameraValue> {
       );
     }
     try {
-      final Completer<CameraInitializedEvent> initializeCompleter =
-          Completer<CameraInitializedEvent>();
+      final initializeCompleter = Completer<CameraInitializedEvent>();
 
-      _deviceOrientationSubscription = CameraPlatform.instance
-          .onDeviceOrientationChanged()
-          .listen((DeviceOrientationChangedEvent event) {
-            value = value.copyWith(deviceOrientation: event.orientation);
-          });
+      _deviceOrientationSubscription = CameraPlatform.instance.onDeviceOrientationChanged().listen((
+        DeviceOrientationChangedEvent event,
+      ) {
+        value = value.copyWith(deviceOrientation: event.orientation);
+      });
 
       _cameraId = await CameraPlatform.instance.createCameraWithSettings(
         description,
         mediaSettings ?? const MediaSettings(),
       );
 
-      _unawaited(
+      unawaited(
         CameraPlatform.instance.onCameraInitialized(_cameraId).first.then((
           CameraInitializedEvent event,
         ) {
@@ -311,8 +311,7 @@ class CameraController extends ValueNotifier<CameraValue> {
       value = value.copyWith(
         isInitialized: true,
         previewSize: await initializeCompleter.future.then(
-          (CameraInitializedEvent event) =>
-              Size(event.previewWidth, event.previewHeight),
+          (CameraInitializedEvent event) => Size(event.previewWidth, event.previewHeight),
         ),
         exposureMode: await initializeCompleter.future.then(
           (CameraInitializedEvent event) => event.exposureMode,
@@ -442,11 +441,11 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
 
     try {
-      _imageStreamSubscription = CameraPlatform.instance
-          .onStreamedFrameAvailable(_cameraId)
-          .listen((CameraImageData imageData) {
-            onAvailable(CameraImage.fromPlatformInterface(imageData));
-          });
+      _imageStreamSubscription = CameraPlatform.instance.onStreamedFrameAvailable(_cameraId).listen(
+        (CameraImageData imageData) {
+          onAvailable(CameraImage.fromPlatformInterface(imageData));
+        },
+      );
       value = value.copyWith(isStreamingImages: true);
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
@@ -489,8 +488,14 @@ class CameraController extends ValueNotifier<CameraValue> {
   ///
   /// The video is returned as a [XFile] after calling [stopVideoRecording].
   /// Throws a [CameraException] if the capture fails.
+  ///
+  /// `enablePersistentRecording` parameter configures the recording to be a persistent recording.
+  /// A persistent recording will only be stopped by explicitly calling [stopVideoRecording]
+  /// and will ignore events that would normally cause recording to stop,
+  /// such as lifecycle events or explicit calls to [setDescription] while recording is in progress.
   Future<void> startVideoRecording({
     onLatestImageAvailable? onAvailable,
+    bool enablePersistentRecording = true,
   }) async {
     _throwIfNotInitialized('startVideoRecording');
     if (value.isRecordingVideo) {
@@ -509,7 +514,11 @@ class CameraController extends ValueNotifier<CameraValue> {
 
     try {
       await CameraPlatform.instance.startVideoCapturing(
-        VideoCaptureOptions(_cameraId, streamCallback: streamCallback),
+        VideoCaptureOptions(
+          _cameraId,
+          streamCallback: streamCallback,
+          enablePersistentRecording: enablePersistentRecording,
+        ),
       );
       value = value.copyWith(
         isRecordingVideo: true,
@@ -541,9 +550,7 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
 
     try {
-      final XFile file = await CameraPlatform.instance.stopVideoRecording(
-        _cameraId,
-      );
+      final XFile file = await CameraPlatform.instance.stopVideoRecording(_cameraId);
       value = value.copyWith(
         isRecordingVideo: false,
         recordingOrientation: const Optional<DeviceOrientation>.absent(),
@@ -589,6 +596,21 @@ class CameraController extends ValueNotifier<CameraValue> {
       value = value.copyWith(isRecordingPaused: false);
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
+    }
+  }
+
+  /// Sets the description of the camera.
+  ///
+  /// To avoid cancelling any active recording when calling this method,
+  /// start the recording with [startVideoRecording] with `enablePersistentRecording` to `true`.
+  ///
+  /// Throws a [CameraException] if setting the description fails.
+  Future<void> setDescription(CameraDescription description) async {
+    if (value.isRecordingVideo) {
+      await CameraPlatform.instance.setDescriptionWhileRecording(description);
+      value = value.copyWith(description: description);
+    } else {
+      await _initializeWithDescription(description);
     }
   }
 
@@ -661,11 +683,8 @@ class CameraController extends ValueNotifier<CameraValue> {
   /// Supplying a `null` value will reset the exposure point to it's default
   /// value.
   Future<void> setExposurePoint(Offset? point) async {
-    if (point != null &&
-        (point.dx < 0 || point.dx > 1 || point.dy < 0 || point.dy > 1)) {
-      throw ArgumentError(
-        'The values of point should be anywhere between (0,0) and (1,1).',
-      );
+    if (point != null && (point.dx < 0 || point.dx > 1 || point.dy < 0 || point.dy > 1)) {
+      throw ArgumentError('The values of point should be anywhere between (0,0) and (1,1).');
     }
 
     try {
@@ -682,7 +701,7 @@ class CameraController extends ValueNotifier<CameraValue> {
   Future<double> getMinExposureOffset() async {
     _throwIfNotInitialized('getMinExposureOffset');
     try {
-      return CameraPlatform.instance.getMinExposureOffset(_cameraId);
+      return await CameraPlatform.instance.getMinExposureOffset(_cameraId);
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
     }
@@ -692,7 +711,7 @@ class CameraController extends ValueNotifier<CameraValue> {
   Future<double> getMaxExposureOffset() async {
     _throwIfNotInitialized('getMaxExposureOffset');
     try {
-      return CameraPlatform.instance.getMaxExposureOffset(_cameraId);
+      return await CameraPlatform.instance.getMaxExposureOffset(_cameraId);
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
     }
@@ -704,7 +723,7 @@ class CameraController extends ValueNotifier<CameraValue> {
   Future<double> getExposureOffsetStepSize() async {
     _throwIfNotInitialized('getExposureOffsetStepSize');
     try {
-      return CameraPlatform.instance.getExposureOffsetStepSize(_cameraId);
+      return await CameraPlatform.instance.getExposureOffsetStepSize(_cameraId);
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
     }
@@ -749,7 +768,7 @@ class CameraController extends ValueNotifier<CameraValue> {
     }
 
     try {
-      return CameraPlatform.instance.setExposureOffset(_cameraId, offset);
+      return await CameraPlatform.instance.setExposureOffset(_cameraId, offset);
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
     }
@@ -788,9 +807,7 @@ class CameraController extends ValueNotifier<CameraValue> {
   Future<void> unlockCaptureOrientation() async {
     try {
       await CameraPlatform.instance.unlockCaptureOrientation(_cameraId);
-      value = value.copyWith(
-        lockedCaptureOrientation: const Optional<DeviceOrientation>.absent(),
-      );
+      value = value.copyWith(lockedCaptureOrientation: const Optional<DeviceOrientation>.absent());
     } on PlatformException catch (e) {
       throw CameraException(e.code, e.message);
     }
@@ -801,11 +818,8 @@ class CameraController extends ValueNotifier<CameraValue> {
   /// Supplying a `null` value will reset the focus point to it's default
   /// value.
   Future<void> setFocusPoint(Offset? point) async {
-    if (point != null &&
-        (point.dx < 0 || point.dx > 1 || point.dy < 0 || point.dy > 1)) {
-      throw ArgumentError(
-        'The values of point should be anywhere between (0,0) and (1,1).',
-      );
+    if (point != null && (point.dx < 0 || point.dx > 1 || point.dy < 0 || point.dy > 1)) {
+      throw ArgumentError('The values of point should be anywhere between (0,0) and (1,1).');
     }
     try {
       await CameraPlatform.instance.setFocusPoint(
@@ -823,7 +837,7 @@ class CameraController extends ValueNotifier<CameraValue> {
     if (_isDisposed) {
       return;
     }
-    _unawaited(_deviceOrientationSubscription?.cancel());
+    unawaited(_deviceOrientationSubscription?.cancel());
     _isDisposed = true;
     super.dispose();
     if (_initCalled != null) {
@@ -868,13 +882,7 @@ class Optional<T> extends IterableBase<T> {
   const Optional.absent() : _value = null;
 
   /// Constructs an Optional of the given [value].
-  ///
-  /// Throws [ArgumentError] if [value] is null.
-  Optional.of(T value) : _value = value {
-    // TODO(cbracken): Delete and make this ctor const once mixed-mode
-    // execution is no longer around.
-    ArgumentError.checkNotNull(value);
-  }
+  const Optional.of(T value) : _value = value;
 
   /// Constructs an Optional of the given [value].
   ///
@@ -931,9 +939,7 @@ class Optional<T> extends IterableBase<T> {
   ///
   /// The transformer must not return `null`. If it does, an [ArgumentError] is thrown.
   Optional<S> transform<S>(S Function(T value) transformer) {
-    return _value == null
-        ? Optional<S>.absent()
-        : Optional<S>.of(transformer(_value as T));
+    return _value == null ? Optional<S>.absent() : Optional<S>.of(transformer(_value as T));
   }
 
   /// Transforms the Optional value.
@@ -948,8 +954,7 @@ class Optional<T> extends IterableBase<T> {
   }
 
   @override
-  Iterator<T> get iterator =>
-      isPresent ? <T>[_value as T].iterator : Iterable<T>.empty().iterator;
+  Iterator<T> get iterator => isPresent ? <T>[_value as T].iterator : Iterable<T>.empty().iterator;
 
   /// Delegates to the underlying [value] hashCode.
   @override
@@ -961,8 +966,6 @@ class Optional<T> extends IterableBase<T> {
 
   @override
   String toString() {
-    return _value == null
-        ? 'Optional { absent }'
-        : 'Optional { value: $_value }';
+    return _value == null ? 'Optional { absent }' : 'Optional { value: $_value }';
   }
 }

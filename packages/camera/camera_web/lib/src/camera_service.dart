@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,9 +34,7 @@ class CameraService {
     final web.MediaDevices mediaDevices = window.navigator.mediaDevices;
 
     try {
-      return await mediaDevices
-          .getUserMedia(options.toMediaStreamConstraints())
-          .toDart;
+      return await mediaDevices.getUserMedia(options.toMediaStreamConstraints()).toDart;
     } on web.DOMException catch (e) {
       switch (e.name) {
         case 'NotFoundError':
@@ -110,8 +108,8 @@ class CameraService {
   /// or the camera has not been initialized or started.
   ZoomLevelCapability getZoomLevelCapabilityForCamera(Camera camera) {
     final web.MediaDevices mediaDevices = window.navigator.mediaDevices;
-    final web.MediaTrackSupportedConstraints supportedConstraints =
-        mediaDevices.getSupportedConstraints();
+    final web.MediaTrackSupportedConstraints supportedConstraints = mediaDevices
+        .getSupportedConstraints();
     final bool zoomLevelSupported = supportedConstraints.zoomNullable ?? false;
 
     if (!zoomLevelSupported) {
@@ -130,8 +128,9 @@ class CameraService {
 
       /// The zoom level capability is represented by MediaSettingsRange.
       /// See: https://developer.mozilla.org/en-US/docs/Web/API/MediaSettingsRange
-      final WebTweakMediaSettingsRange? zoomLevelCapability =
-          defaultVideoTrack.getCapabilities().zoomNullable;
+      final WebTweakMediaSettingsRange? zoomLevelCapability = defaultVideoTrack
+          .getCapabilities()
+          .zoomNullable;
 
       if (zoomLevelCapability != null) {
         return ZoomLevelCapability(
@@ -161,8 +160,8 @@ class CameraService {
     final web.MediaDevices mediaDevices = window.navigator.mediaDevices;
 
     // Check if the camera facing mode is supported by the current browser.
-    final web.MediaTrackSupportedConstraints supportedConstraints =
-        mediaDevices.getSupportedConstraints();
+    final web.MediaTrackSupportedConstraints supportedConstraints = mediaDevices
+        .getSupportedConstraints();
 
     // Return null if the facing mode is not supported.
     if (!supportedConstraints.facingMode) {
@@ -194,15 +193,15 @@ class CameraService {
         return null;
       }
 
-      final web.MediaTrackCapabilities videoTrackCapabilities =
-          videoTrack.getCapabilities();
+      final web.MediaTrackCapabilities videoTrackCapabilities = videoTrack.getCapabilities();
 
       // A list of facing mode capabilities as
       // the camera may support multiple facing modes.
       final List<String> facingModeCapabilities =
-          videoTrackCapabilities.facingMode.toDart
+          videoTrackCapabilities.facingModeNullable?.toDart
               .map((JSString e) => e.toDart)
-              .toList();
+              .toList() ??
+          <String>[];
 
       if (facingModeCapabilities.isNotEmpty) {
         final String facingModeCapability = facingModeCapabilities.first;
@@ -327,9 +326,7 @@ class CameraService {
   }
 
   /// Maps the given [deviceOrientation] to [OrientationType].
-  String mapDeviceOrientationToOrientationType(
-    DeviceOrientation deviceOrientation,
-  ) {
+  String mapDeviceOrientationToOrientationType(DeviceOrientation deviceOrientation) {
     switch (deviceOrientation) {
       case DeviceOrientation.portraitUp:
         return OrientationType.portraitPrimary;
@@ -343,9 +340,7 @@ class CameraService {
   }
 
   /// Maps the given [orientationType] to [DeviceOrientation].
-  DeviceOrientation mapOrientationTypeToDeviceOrientation(
-    String orientationType,
-  ) {
+  DeviceOrientation mapOrientationTypeToDeviceOrientation(String orientationType) {
     switch (orientationType) {
       case OrientationType.portraitPrimary:
         return DeviceOrientation.portraitUp;

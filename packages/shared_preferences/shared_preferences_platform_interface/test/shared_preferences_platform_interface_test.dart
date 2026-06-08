@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,9 +70,7 @@ class IllegalImplementation implements SharedPreferencesStorePlatform {
   }
 
   @override
-  Future<Map<String, Object>> getAllWithParameters(
-    GetAllParameters parameters,
-  ) {
+  Future<Map<String, Object>> getAllWithParameters(GetAllParameters parameters) {
     throw UnimplementedError();
   }
 
@@ -117,9 +115,7 @@ class LegacyIsMockImplementation implements SharedPreferencesStorePlatform {
   }
 
   @override
-  Future<Map<String, Object>> getAllWithParameters(
-    GetAllParameters parameters,
-  ) {
+  Future<Map<String, Object>> getAllWithParameters(GetAllParameters parameters) {
     throw UnimplementedError();
   }
 
@@ -166,9 +162,7 @@ class ModernMockImplementation
   }
 
   @override
-  Future<Map<String, Object>> getAllWithParameters(
-    GetAllParameters parameters,
-  ) {
+  Future<Map<String, Object>> getAllWithParameters(GetAllParameters parameters) {
     throw UnimplementedError();
   }
 

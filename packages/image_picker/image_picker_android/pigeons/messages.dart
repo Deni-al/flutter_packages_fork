@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,10 +7,8 @@ import 'package:pigeon/pigeon.dart';
 @ConfigurePigeon(
   PigeonOptions(
     dartOut: 'lib/src/messages.g.dart',
-    dartTestOut: 'test/test_api.g.dart',
-    javaOut:
-        'android/src/main/java/io/flutter/plugins/imagepicker/Messages.java',
-    javaOptions: JavaOptions(package: 'io.flutter.plugins.imagepicker'),
+    kotlinOut: 'android/src/main/kotlin/io/flutter/plugins/imagepicker/Messages.kt',
+    kotlinOptions: KotlinOptions(package: 'io.flutter.plugins.imagepicker'),
     copyrightHeader: 'pigeons/copyright.txt',
   ),
 )
@@ -78,11 +76,7 @@ enum CacheRetrievalType { image, video }
 
 /// The result of retrieving cached results from a previous run.
 class CacheRetrievalResult {
-  CacheRetrievalResult({
-    required this.type,
-    this.error,
-    this.paths = const <String>[],
-  });
+  CacheRetrievalResult({required this.type, this.error, this.paths = const <String>[]});
 
   /// The type of the retrieved data.
   final CacheRetrievalType type;
@@ -94,7 +88,7 @@ class CacheRetrievalResult {
   final List<String> paths;
 }
 
-@HostApi(dartHostTestHandler: 'TestHostImagePickerApi')
+@HostApi()
 abstract class ImagePickerApi {
   /// Selects images and returns their paths.
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)

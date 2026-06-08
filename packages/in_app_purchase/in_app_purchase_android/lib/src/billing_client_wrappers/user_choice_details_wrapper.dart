@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,11 +33,8 @@ class UserChoiceDetailsWrapper {
   }
 
   @override
-  int get hashCode => Object.hash(
-    originalExternalTransactionId,
-    externalTransactionToken,
-    products.hashCode,
-  );
+  int get hashCode =>
+      Object.hash(originalExternalTransactionId, externalTransactionToken, products.hashCode);
 
   /// Returns the external transaction Id of the originating subscription, if
   /// the purchase is a subscription upgrade/downgrade.

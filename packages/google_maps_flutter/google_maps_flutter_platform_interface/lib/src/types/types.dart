@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@ export 'heatmap.dart';
 export 'heatmap_updates.dart';
 export 'joint_type.dart';
 export 'location.dart';
+export 'map_color_scheme.dart';
 export 'map_configuration.dart';
 export 'map_objects.dart';
 export 'map_widget_configuration.dart';

@@ -1,3 +1,53 @@
+## 0.10.10+18
+
+* Bumps the androidx group across 10 directories with 1 update.
+* Updates minimum supported SDK version to Flutter 3.38/Dart 3.10.
+
+## 0.10.10+17
+
+* Reset AE and AF triggers to idle after capture to fix camera flash remaining issue #97501.
+
+## 0.10.10+16
+
+* Updates build files from Groovy to Kotlin.
+
+## 0.10.10+15
+
+* Updates example to demonstrate correct exception handling for async return statements, ensuring exceptions thrown during return within try blocks are properly caught as per [dart-lang/sdk#44395](https://github.com/dart-lang/sdk/issues/44395).
+
+## 0.10.10+14
+
+* Bumps com.android.tools.build:gradle from 8.12.1 to 8.13.1.
+
+## 0.10.10+13
+
+* Updates to Pigeon 26.
+
+## 0.10.10+12
+
+* Removed mockito-inline and updated to mockito-core 5.17.0.
+
+## 0.10.10+11
+
+* Updates examples to use the new RadioGroup API instead of deprecated Radio parameters.
+
+## 0.10.10+10
+
+* Updates Java compatibility version to 17.
+
+## 0.10.10+9
+
+* Resolves Gradle 9 deprecations.
+
+## 0.10.10+8
+
+* Restores compileSdk version to flutter.compileSdkVersion.
+
+## 0.10.10+7
+
+* Updates minimum supported SDK version to Flutter 3.35.
+* Removes code for supporting API 21-23.
+
 ## 0.10.10+6
 
 * Bumps com.android.tools.build:gradle to 8.12.1.

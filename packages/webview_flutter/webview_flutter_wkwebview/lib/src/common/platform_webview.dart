@@ -1,4 +1,4 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,8 +39,7 @@ class PlatformWebView {
   }
 
   /// Creates a [PlatformWebView] with the native WebView instance.
-  PlatformWebView.fromNativeWebView(WKWebView webView)
-    : nativeWebView = webView;
+  PlatformWebView.fromNativeWebView(WKWebView webView) : nativeWebView = webView;
 
   /// The underlying native WebView instance.
   late final WKWebView nativeWebView;
@@ -324,7 +323,7 @@ class PlatformWebView {
   }
 
   /// The view’s background color.
-  Future<void> setBackgroundColor(int? value) {
+  Future<void> setBackgroundColor(UIColor? value) {
     final WKWebView webView = nativeWebView;
     switch (webView) {
       case UIViewWKWebView():
