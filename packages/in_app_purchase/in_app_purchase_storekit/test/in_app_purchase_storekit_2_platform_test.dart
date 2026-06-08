@@ -660,7 +660,7 @@ void main() {
   group('showManageSubscriptions', () {
     test('should complete without error', () async {
       // Create AppStore instance
-      final AppStore appStore = AppStore();
+      final appStore = AppStore();
 
       // Call showManageSubscriptions - should complete without throwing
       expect(() async {

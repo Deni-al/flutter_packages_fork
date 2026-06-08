@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 import StoreKit
+
 #if os(iOS)
-import UIKit
+  import UIKit
 #endif
 
 @available(iOS 15.0, macOS 12.0, *)
@@ -508,20 +509,22 @@ extension InAppPurchasePlugin: InAppPurchase2API {
     Task { @MainActor in
       do {
         #if os(iOS)
-        guard let windowScene = await UIApplication.shared.connectedScenes
-          .compactMap({ $0 as? UIWindowScene })
-          .first else {
-          let error = PigeonError(
-            code: "storekit2_no_window_scene",
-            message: "No active window scene found to present subscription management.",
-            details: nil)
-          completion(.failure(error))
-          return
-        }
+          guard
+            let windowScene = await UIApplication.shared.connectedScenes
+              .compactMap({ $0 as? UIWindowScene })
+              .first
+          else {
+            let error = PigeonError(
+              code: "storekit2_no_window_scene",
+              message: "No active window scene found to present subscription management.",
+              details: nil)
+            completion(.failure(error))
+            return
+          }
 
-        try await AppStore.showManageSubscriptions(in: windowScene)
+          try await AppStore.showManageSubscriptions(in: windowScene)
         #elseif os(macOS)
-        try await AppStore.showManageSubscriptions()
+          try await AppStore.showManageSubscriptions()
         #endif
 
         completion(.success(()))

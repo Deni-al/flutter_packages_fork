@@ -347,7 +347,6 @@ class FakeStoreKit2Platform implements InAppPurchase2API {
       validProducts[validID] = product;
     }
     eligibleWinBackOffers = <String, Set<String>>{};
-    currentlySelectedProducts = <String, bool>{};
     autoRenewProducts = <String, bool>{};
     eligibleIntroductoryOffers = <String, bool>{};
     simulatedPurchaseResult = SK2ProductPurchaseResultMessage.success;
