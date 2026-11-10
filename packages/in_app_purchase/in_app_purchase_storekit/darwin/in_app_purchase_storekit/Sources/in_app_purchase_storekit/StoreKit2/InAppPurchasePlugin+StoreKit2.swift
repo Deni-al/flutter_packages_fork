@@ -4,10 +4,6 @@
 
 import StoreKit
 
-#if os(iOS)
-  import UIKit
-#endif
-
 @available(iOS 15.0, macOS 12.0, *)
 extension InAppPurchasePlugin: InAppPurchase2API {
   // MARK: - Pigeon Functions
@@ -89,6 +85,13 @@ extension InAppPurchasePlugin: InAppPurchase2API {
           }
         }
 
+        // No availability check is needed: `introductoryOfferEligibility` is
+        // back deployed, so it is available on the same iOS 15 / macOS 12
+        // floor as the rest of this StoreKit 2 extension.
+        if let compactJWS = options?.introductoryOfferEligibilityCompactJWS {
+          purchaseOptions.insert(.introductoryOfferEligibility(compactJWS: compactJWS))
+        }
+
         for await verificationResult in Transaction.unfinished {
           switch verificationResult {
           case .verified(let transaction):
@@ -105,7 +108,7 @@ extension InAppPurchasePlugin: InAppPurchase2API {
           }
         }
 
-        let result = try await product.purchase(options: purchaseOptions)
+        let result = try await confirmPurchase(of: product, options: purchaseOptions)
 
         switch result {
         case .success(let verification):
@@ -190,6 +193,48 @@ extension InAppPurchasePlugin: InAppPurchase2API {
             code: "storekit2_unsupported_platform_version",
             message: "Win back offers require iOS 18+ or macOS 15.0+",
             details: nil)))
+    }
+  }
+
+  /// Returns Apple's verified renewal JSON for the product's subscription group.
+  func subscriptionRenewalInfo(
+    productId: String,
+    completion: @escaping (Result<[String], Error>) -> Void
+  ) {
+    Task {
+      do {
+        guard let product = try await Product.products(for: [productId]).first else {
+          completion(
+            .failure(
+              PigeonError(
+                code: "storekit2_failed_to_fetch_product",
+                message: "StoreKit has failed to fetch this product.",
+                details: "Product ID: \(productId)")))
+          return
+        }
+        guard let subscription = product.subscription else {
+          completion(
+            .failure(
+              PigeonError(
+                code: "storekit2_not_subscription",
+                message: "Product is not a subscription",
+                details: "Product ID: \(productId)")))
+          return
+        }
+        let statuses = try await subscription.status
+        let info = try statuses.map { status in
+          let renewalInfo = try status.renewalInfo.payloadValue
+          return String(decoding: renewalInfo.jsonRepresentation, as: UTF8.self)
+        }
+        completion(.success(info))
+      } catch {
+        completion(
+          .failure(
+            PigeonError(
+              code: "storekit2_failed_to_fetch_renewal_info",
+              message: "Failed to fetch verified subscription renewal information.",
+              details: String(describing: error))))
+      }
     }
   }
 
@@ -358,19 +403,43 @@ extension InAppPurchasePlugin: InAppPurchase2API {
     }
   }
 
+  /// Wrapper method around StoreKit2's Transaction.currentEntitlements
+  /// https://developer.apple.com/documentation/storekit/transaction/currententitlements
+  func currentEntitlements(
+    completion: @escaping (Result<[SK2TransactionMessage], Error>) -> Void
+  ) {
+    Task {
+      @MainActor in
+      var transactionsMsgs: [SK2TransactionMessage] = []
+      for await verificationResult in Transaction.currentEntitlements {
+        switch verificationResult {
+        case .verified(let transaction):
+          transactionsMsgs.append(
+            transaction.convertToPigeon(
+              receipt: verificationResult.jwsRepresentation, status: .purchased)
+          )
+        case .unverified:
+          break
+        }
+      }
+      completion(.success(transactionsMsgs))
+    }
+  }
+
   func restorePurchases(completion: @escaping (Result<Void, Error>) -> Void) {
     Task { [weak self] in
       guard let self = self else { return }
       do {
+        var restoredTransactions: [SK2TransactionMessage] = []
         var unverifiedPurchases: [UInt64: (receipt: String, error: Error?)] = [:]
         for await completedPurchase in Transaction.currentEntitlements {
           switch completedPurchase {
           case .verified(let purchase):
-            self.sendTransactionUpdate(
-              productId: purchase.productID,
-              transaction: purchase,
-              receipt: "\(completedPurchase.jwsRepresentation)",
-              status: .restored
+            restoredTransactions.append(
+              purchase.convertToPigeon(
+                receipt: "\(completedPurchase.jwsRepresentation)",
+                status: .restored
+              )
             )
           case .unverified(let failedPurchase, let error):
             unverifiedPurchases[failedPurchase.id] = (
@@ -378,6 +447,7 @@ extension InAppPurchasePlugin: InAppPurchase2API {
             )
           }
         }
+        self.sendTransactionUpdates(restoredTransactions)
         if !unverifiedPurchases.isEmpty {
           completion(
             .failure(
@@ -386,6 +456,7 @@ extension InAppPurchasePlugin: InAppPurchase2API {
                 message:
                   "This purchase could not be restored.",
                 details: unverifiedPurchases)))
+          return
         }
         completion(.success(Void()))
       }
@@ -395,11 +466,12 @@ extension InAppPurchasePlugin: InAppPurchase2API {
   /// Wrapper method around StoreKit2's finish() method https://developer.apple.com/documentation/storekit/transaction/3749694-finish
   func finish(id: Int64, completion: @escaping (Result<Void, Error>) -> Void) {
     Task {
-      let transaction = try await fetchTransaction(by: UInt64(id))
-      if let transaction = transaction {
+      // Report success when no verified transaction matches, as StoreKit 1
+      // does; a finished consumable is no longer in Transaction.all.
+      if let transaction = await fetchTransaction(by: UInt64(id)) {
         await transaction.finish()
-        completion(.success(Void()))
       }
+      completion(.success(Void()))
     }
   }
 
@@ -481,6 +553,41 @@ extension InAppPurchasePlugin: InAppPurchase2API {
     #endif
   }
 
+  /// Wrapper method around StoreKit2's showManageSubscriptions(in:) method
+  /// https://developer.apple.com/documentation/storekit/appstore/showmanagesubscriptions(in:)
+  /// Presents the App Store sheet that lets the user manage their subscriptions.
+  func showManageSubscriptions(completion: @escaping (Result<Void, Error>) -> Void) {
+    #if os(iOS)
+      Task { @MainActor in
+        guard let windowScene = self.registrar?.viewController?.view.window?.windowScene else {
+          let error = PigeonError(
+            code: "storekit2_missing_key_window_scene",
+            message: "Failed to fetch key window scene",
+            details: "registrar.viewController.view.window.windowScene returned nil."
+          )
+          completion(.failure(error))
+          return
+        }
+        do {
+          try await AppStore.showManageSubscriptions(in: windowScene)
+          completion(.success(()))
+        } catch {
+          completion(.failure(error))
+        }
+      }
+    #elseif os(macOS)
+      // StoreKit does not provide showManageSubscriptions on macOS. Subscriptions are
+      // managed through the App Store app instead.
+      completion(
+        .failure(
+          PigeonError(
+            code: "storekit2_unsupported_platform",
+            message: "Managing subscriptions is not supported on macOS",
+            details: nil
+          )))
+    #endif
+  }
+
   /// Wrapper method around StoreKit2's sync() method
   /// https://developer.apple.com/documentation/storekit/appstore/sync()
   /// When called, a system prompt will ask users to enter their authentication details
@@ -494,45 +601,6 @@ extension InAppPurchasePlugin: InAppPurchase2API {
         let pigeonError = PigeonError(
           code: "storekit2_failed_to_sync_to_app_store",
           message: "Storekit has failed to sync to the app store.",
-          details: "\(error)")
-        completion(.failure(pigeonError))
-        return
-      }
-    }
-  }
-
-  /// Wrapper method around StoreKit2's showManageSubscriptions() method
-  /// https://developer.apple.com/documentation/storekit/appstore/showmanagesubscriptions(in:)
-  /// Opens the subscription management sheet for the user
-  @available(iOS 15.0, macOS 12.0, *)
-  func showManageSubscriptions(completion: @escaping (Result<Void, Error>) -> Void) {
-    Task { @MainActor in
-      do {
-        #if os(iOS)
-          guard
-            let windowScene = await UIApplication.shared.connectedScenes
-              .compactMap({ $0 as? UIWindowScene })
-              .first
-          else {
-            let error = PigeonError(
-              code: "storekit2_no_window_scene",
-              message: "No active window scene found to present subscription management.",
-              details: nil)
-            completion(.failure(error))
-            return
-          }
-
-          try await AppStore.showManageSubscriptions(in: windowScene)
-        #elseif os(macOS)
-          try await AppStore.showManageSubscriptions()
-        #endif
-
-        completion(.success(()))
-        return
-      } catch {
-        let pigeonError = PigeonError(
-          code: "storekit2_failed_to_show_manage_subscriptions",
-          message: "Failed to show manage subscriptions sheet.",
           details: "\(error)")
         completion(.failure(pigeonError))
         return
@@ -595,8 +663,12 @@ extension InAppPurchasePlugin: InAppPurchase2API {
       )
     }
 
+    sendTransactionUpdates([transactionMessage])
+  }
+
+  private func sendTransactionUpdates(_ transactionMessages: [SK2TransactionMessage]) {
     Task { @MainActor in
-      self.transactionCallbackAPI?.onTransactionsUpdated(newTransactions: [transactionMessage]) {
+      self.transactionCallbackAPI?.onTransactionsUpdated(newTransactions: transactionMessages) {
         result in
         switch result {
         case .success: break
@@ -624,7 +696,7 @@ extension InAppPurchasePlugin: InAppPurchase2API {
   }
 
   /// Helper function to fetch specific transaction
-  func fetchTransaction(by id: UInt64) async throws -> Transaction? {
+  func fetchTransaction(by id: UInt64) async -> Transaction? {
     for await result in Transaction.all {
       switch result {
       case .verified(let transaction):
@@ -636,5 +708,34 @@ extension InAppPurchasePlugin: InAppPurchase2API {
       }
     }
     return nil
+  }
+
+  /// Purchases `product`, anchoring the confirmation UI to the Flutter view when possible.
+  ///
+  /// The scene-less `purchase(options:)` leaves StoreKit to find a UI anchor itself, which fails
+  /// on iOS 27 and leaves the purchase pending forever; it remains the fallback for older OS
+  /// versions and for engines whose view is not in a window.
+  @MainActor
+  private func confirmPurchase(
+    of product: Product,
+    options: Set<Product.PurchaseOption>
+  ) async throws -> Product.PurchaseResult {
+    #if os(iOS)
+      if let viewController = self.registrar?.viewController,
+        let windowScene = viewController.view.window?.windowScene
+      {
+        if #available(iOS 18.2, *) {
+          return try await product.purchase(confirmIn: viewController, options: options)
+        }
+        if #available(iOS 17.0, *) {
+          return try await product.purchase(confirmIn: windowScene, options: options)
+        }
+      }
+    #elseif os(macOS)
+      if #available(macOS 15.2, *), let window = self.registrar?.view?.window {
+        return try await product.purchase(confirmIn: window, options: options)
+      }
+    #endif
+    return try await product.purchase(options: options)
   }
 }

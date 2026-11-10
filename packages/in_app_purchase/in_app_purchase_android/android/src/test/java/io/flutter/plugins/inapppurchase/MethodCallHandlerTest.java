@@ -7,6 +7,7 @@ package io.flutter.plugins.inapppurchase;
 import static io.flutter.plugins.inapppurchase.MethodCallHandlerImpl.ACTIVITY_UNAVAILABLE;
 import static io.flutter.plugins.inapppurchase.MethodCallHandlerImpl.REPLACEMENT_MODE_UNKNOWN_SUBSCRIPTION_UPGRADE_DOWNGRADE_POLICY;
 import static io.flutter.plugins.inapppurchase.TranslatorKt.fromBillingResponseCode;
+import static io.flutter.plugins.inapppurchase.TranslatorKt.fromInAppMessageResponseCode;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -45,6 +46,8 @@ import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.GetBillingConfigParams;
+import com.android.billingclient.api.InAppMessageResponseListener;
+import com.android.billingclient.api.InAppMessageResult;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.ProductDetailsResponseListener;
 import com.android.billingclient.api.Purchase;
@@ -86,6 +89,7 @@ public class MethodCallHandlerTest {
   TestResult<PlatformBillingResult> platformBillingResult = new TestResult<>();
   TestResult<PlatformProductDetailsResponse> platformProductDetailsResult = new TestResult<>();
   TestResult<PlatformPurchasesResponse> platformPurchasesResult = new TestResult<>();
+  TestResult<PlatformInAppMessageResult> platformInAppMessageResult = new TestResult<>();
 
   @Mock Activity activity;
   @Mock Context context;
@@ -494,6 +498,63 @@ public class MethodCallHandlerTest {
   }
 
   @Test
+  public void showInAppMessagesSuccess() {
+    mockStartConnection();
+    ArgumentCaptor<InAppMessageResponseListener> listenerCaptor =
+        ArgumentCaptor.forClass(InAppMessageResponseListener.class);
+    BillingResult billingResult = buildBillingResult(BillingClient.BillingResponseCode.OK);
+    InAppMessageResult inAppMessageResult =
+        buildInAppMessageResult(
+            InAppMessageResult.InAppMessageResponseCode.SUBSCRIPTION_STATUS_UPDATED);
+
+    when(mockBillingClient.showInAppMessages(eq(activity), any(), listenerCaptor.capture()))
+        .thenReturn(billingResult);
+
+    methodChannelHandler.showInAppMessages(platformInAppMessageResult.asCallback());
+    listenerCaptor.getValue().onInAppMessageResponse(inAppMessageResult);
+
+    assertTrue(platformInAppMessageResult.called);
+
+    PlatformInAppMessageResult pigeonResult = platformInAppMessageResult.result.getOrNull();
+    assertNotNull(pigeonResult);
+    assertEquals(
+        pigeonResult.getResponseCode(),
+        fromInAppMessageResponseCode(inAppMessageResult.getResponseCode()));
+    assertEquals(pigeonResult.getPurchaseToken(), inAppMessageResult.getPurchaseToken());
+  }
+
+  @Test
+  public void showInAppMessages_serviceDisconnected() {
+    methodChannelHandler.showInAppMessages(platformInAppMessageResult.asCallback());
+
+    // Assert that the async call returns an error result.
+    assertTrue(platformInAppMessageResult.called);
+    Throwable error = platformInAppMessageResult.result.exceptionOrNull();
+    assertTrue(error instanceof FlutterError);
+    FlutterError flutterError = (FlutterError) error;
+    assertEquals("UNAVAILABLE", flutterError.getCode());
+    assertTrue(Objects.requireNonNull(flutterError.getMessage()).contains("BillingClient"));
+  }
+
+  @Test
+  public void showInAppMessages_NullActivity() {
+    mockStartConnection();
+    methodChannelHandler.setActivity(null);
+
+    methodChannelHandler.showInAppMessages(platformInAppMessageResult.asCallback());
+
+    // Assert that the async call returns an error result.
+    assertTrue(platformInAppMessageResult.called);
+    Throwable error = platformInAppMessageResult.result.exceptionOrNull();
+    assertTrue(error instanceof FlutterError);
+    FlutterError flutterError = (FlutterError) error;
+    assertEquals(ACTIVITY_UNAVAILABLE, flutterError.getCode());
+    assertTrue(
+        Objects.requireNonNull(flutterError.getMessage())
+            .contains("Not attempting to show dialog"));
+  }
+
+  @Test
   public void endConnection() {
     // Set up a connected BillingClient instance
     final long disconnectCallbackHandle = 22;
@@ -572,6 +633,48 @@ public class MethodCallHandlerTest {
     FlutterError flutterError = (FlutterError) error;
     assertEquals("UNAVAILABLE", flutterError.getCode());
     assertTrue(Objects.requireNonNull(flutterError.getMessage()).contains("BillingClient"));
+  }
+
+  // Regression test for https://github.com/flutter/flutter/issues/103432: the
+  // Play Billing library can invoke a response listener twice for one call
+  // (its internal watchdog/timeout path); the second pigeon reply must be
+  // dropped instead of throwing "Reply already submitted".
+  @Test
+  public void queryProductDetailsAsync_duplicateListenerResponseIsIgnored() {
+    establishConnectedBillingClient();
+    final List<PlatformQueryProduct> productList =
+        buildProductList(asList("id1", "id2"), PlatformProductType.INAPP);
+
+    methodChannelHandler.queryProductDetailsAsync(
+        productList, platformProductDetailsResult.asCallback());
+
+    ArgumentCaptor<ProductDetailsResponseListener> listenerCaptor =
+        ArgumentCaptor.forClass(ProductDetailsResponseListener.class);
+    verify(mockBillingClient).queryProductDetailsAsync(any(), listenerCaptor.capture());
+
+    List<ProductDetails> firstProducts = singletonList(buildProductDetails("foo"));
+    BillingResult firstResult = buildBillingResult();
+    QueryProductDetailsResult firstDetailsResult = mock(QueryProductDetailsResult.class);
+    when(firstDetailsResult.getProductDetailsList()).thenReturn(firstProducts);
+    when(firstDetailsResult.getUnfetchedProductList())
+        .thenReturn(java.util.Collections.emptyList());
+
+    BillingResult secondResult = buildBillingResult(200);
+    QueryProductDetailsResult secondDetailsResult = mock(QueryProductDetailsResult.class);
+    when(secondDetailsResult.getProductDetailsList())
+        .thenReturn(singletonList(buildProductDetails("bar")));
+    when(secondDetailsResult.getUnfetchedProductList())
+        .thenReturn(java.util.Collections.emptyList());
+
+    listenerCaptor.getValue().onProductDetailsResponse(firstResult, firstDetailsResult);
+    // The second (watchdog) invocation of the SAME listener must not reach the
+    // pigeon callback. (updateCachedProducts still runs, by design.)
+    listenerCaptor.getValue().onProductDetailsResponse(secondResult, secondDetailsResult);
+
+    assertEquals(1, platformProductDetailsResult.callCount);
+    PlatformProductDetailsResponse resultData = platformProductDetailsResult.result.getOrNull();
+    assertResultsMatch(resultData.getBillingResult(), firstResult);
+    assertDetailListsMatch(firstProducts, resultData.getProductDetails());
   }
 
   // Test launchBillingFlow not crash if `accountId` is `null`
@@ -960,6 +1063,32 @@ public class MethodCallHandlerTest {
     assertResultsMatch(platformBillingResult.result.getOrNull(), billingResult);
   }
 
+  // Same duplicate-listener-response scenario as
+  // queryProductDetailsAsync_duplicateListenerResponseIsIgnored, for a
+  // listener that carries only a BillingResult.
+  @Test
+  public void acknowledgePurchase_duplicateListenerResponseIsIgnored() {
+    establishConnectedBillingClient();
+    final String purchaseToken = "mockToken";
+    ArgumentCaptor<AcknowledgePurchaseResponseListener> listenerCaptor =
+        ArgumentCaptor.forClass(AcknowledgePurchaseResponseListener.class);
+
+    methodChannelHandler.acknowledgePurchase(purchaseToken, platformBillingResult.asCallback());
+
+    AcknowledgePurchaseParams params =
+        AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchaseToken).build();
+
+    verify(mockBillingClient).acknowledgePurchase(refEq(params), listenerCaptor.capture());
+
+    BillingResult firstResult = buildBillingResult();
+    BillingResult secondResult = buildBillingResult(200);
+    listenerCaptor.getValue().onAcknowledgePurchaseResponse(firstResult);
+    listenerCaptor.getValue().onAcknowledgePurchaseResponse(secondResult);
+
+    assertEquals(1, platformBillingResult.callCount);
+    assertResultsMatch(platformBillingResult.result.getOrNull(), firstResult);
+  }
+
   @Test
   public void endConnection_if_activity_detached() {
     InAppPurchasePlugin plugin = new InAppPurchasePlugin();
@@ -1128,6 +1257,10 @@ public class MethodCallHandlerTest {
         .build();
   }
 
+  private InAppMessageResult buildInAppMessageResult(int responseCode) {
+    return new InAppMessageResult(responseCode, "dummy purchase token");
+  }
+
   private void assertResultsMatch(
       @Nullable PlatformBillingResult pigeonResult, BillingResult nativeResult) {
     assertNotNull(pigeonResult);
@@ -1161,11 +1294,16 @@ public class MethodCallHandlerTest {
   private static class TestResult<T> implements Function1<ResultCompat<T>, Unit> {
     ResultCompat<T> result;
     boolean called = false;
+    // Lets the duplicate-listener-response regression tests assert that the
+    // pigeon callback completed exactly once (result alone only stores the
+    // last value).
+    int callCount = 0;
 
     @Override
     public Unit invoke(ResultCompat<T> reply) {
       this.result = reply;
       this.called = true;
+      this.callCount++;
       return Unit.INSTANCE;
     }
 

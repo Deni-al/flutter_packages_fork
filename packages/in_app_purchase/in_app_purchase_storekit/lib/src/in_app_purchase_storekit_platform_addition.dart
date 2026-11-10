@@ -18,18 +18,6 @@ class InAppPurchaseStoreKitPlatformAddition extends InAppPurchasePlatformAdditio
     return AppStore().sync();
   }
 
-  /// Opens the subscription management sheet for the user.
-  ///
-  /// This shows the subscription management interface where users can manage
-  /// their subscriptions, including canceling, changing plans, and viewing
-  /// billing information.
-  ///
-  /// StoreKit 2 only, available on iOS 15.0+ and macOS 12.0+.
-  /// See: https://developer.apple.com/documentation/storekit/appstore/showmanagesubscriptions(in:)
-  Future<void> showManageSubscriptions() {
-    return AppStore().showManageSubscriptions();
-  }
-
   /// Present Code Redemption Sheet.
   ///
   /// Available on devices running iOS 14 and iPadOS 14 and later.
@@ -39,6 +27,16 @@ class InAppPurchaseStoreKitPlatformAddition extends InAppPurchasePlatformAdditio
       return AppStore().presentOfferCodeRedeemSheet();
     }
     return SKPaymentQueueWrapper().presentCodeRedemptionSheet();
+  }
+
+  /// Presents the App Store sheet that lets the user manage their
+  /// subscriptions.
+  ///
+  /// Available on devices running iOS 15 and iPadOS 15 and later.
+  /// StoreKit 2 only; StoreKit 1 has no equivalent API. Not supported on macOS,
+  /// where subscriptions are managed through the App Store app instead.
+  Future<void> showManageSubscriptions() {
+    return AppStore().showManageSubscriptions();
   }
 
   /// Retry loading purchase data after an initial failure.

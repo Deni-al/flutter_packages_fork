@@ -319,13 +319,18 @@ class FakeStoreKit2Platform implements InAppPurchase2API {
   late bool testTransactionFail;
   late int testTransactionCancel;
   late List<SK2Transaction> finishedTransactions;
+  List<SK2TransactionMessage> transactionsList = <SK2TransactionMessage>[];
+  List<SK2TransactionMessage> unfinishedTransactionsList = <SK2TransactionMessage>[];
+  List<SK2TransactionMessage> currentEntitlementsList = <SK2TransactionMessage>[];
 
   PlatformException? queryProductException;
   bool isListenerRegistered = false;
   SK2ProductPurchaseOptionsMessage? lastPurchaseOptions;
   Map<String, Set<String>> eligibleWinBackOffers = <String, Set<String>>{};
   Map<String, bool> autoRenewProducts = <String, bool>{};
+  Map<String, List<String>> renewalInfoProducts = <String, List<String>>{};
   Map<String, bool> eligibleIntroductoryOffers = <String, bool>{};
+  int showManageSubscriptionsCallCount = 0;
 
   /// Simulates purchase result for testing non-success scenarios.
   /// Set to userCancelled, pending, or unverified to test those cases.
@@ -348,8 +353,45 @@ class FakeStoreKit2Platform implements InAppPurchase2API {
     }
     eligibleWinBackOffers = <String, Set<String>>{};
     autoRenewProducts = <String, bool>{};
+    renewalInfoProducts = <String, List<String>>{};
     eligibleIntroductoryOffers = <String, bool>{};
     simulatedPurchaseResult = SK2ProductPurchaseResultMessage.success;
+    showManageSubscriptionsCallCount = 0;
+    transactionsList = <SK2TransactionMessage>[
+      SK2TransactionMessage(
+        id: 123,
+        originalId: 123,
+        productId: 'product_id',
+        purchaseDate: 123123.121,
+        purchasedQuantity: 2,
+        status: SK2PurchaseStatusMessage.purchased,
+      ),
+    ];
+    unfinishedTransactionsList = <SK2TransactionMessage>[
+      SK2TransactionMessage(
+        id: 123,
+        originalId: 123,
+        productId: 'product_id',
+        purchaseDate: 123123.121,
+        expirationDate: 321321.32,
+        receiptData: 'fake_jws_representation',
+        appAccountToken: 'fake_app_account_token',
+        purchasedQuantity: 3,
+        status: SK2PurchaseStatusMessage.purchased,
+      ),
+    ];
+    currentEntitlementsList = <SK2TransactionMessage>[
+      SK2TransactionMessage(
+        id: 123,
+        originalId: 123,
+        productId: 'product_id',
+        purchaseDate: 123123.121,
+        expirationDate: 321321.32,
+        receiptData: 'fake_jws_representation',
+        appAccountToken: 'fake_app_account_token',
+        status: SK2PurchaseStatusMessage.purchased,
+      ),
+    ];
   }
 
   SK2TransactionMessage createRestoredTransaction(
@@ -361,7 +403,6 @@ class FakeStoreKit2Platform implements InAppPurchase2API {
       id: 123,
       originalId: 321,
       productId: '',
-      purchaseDate: '',
       appAccountToken: '',
       status: SK2PurchaseStatusMessage.restored,
     );
@@ -408,7 +449,8 @@ class FakeStoreKit2Platform implements InAppPurchase2API {
           id: 1,
           originalId: 2,
           productId: id,
-          purchaseDate: 'purchaseDate',
+          purchaseDate: 123123.121,
+          expirationDate: 321321.32,
           appAccountToken: 'appAccountToken',
           receiptData: 'receiptData',
           jsonRepresentation: 'jsonRepresentation',
@@ -451,30 +493,17 @@ class FakeStoreKit2Platform implements InAppPurchase2API {
 
   @override
   Future<List<SK2TransactionMessage>> transactions() {
-    return Future<List<SK2TransactionMessage>>.value(<SK2TransactionMessage>[
-      SK2TransactionMessage(
-        id: 123,
-        originalId: 123,
-        productId: 'product_id',
-        purchaseDate: '12-12',
-        status: SK2PurchaseStatusMessage.purchased,
-      ),
-    ]);
+    return Future<List<SK2TransactionMessage>>.value(transactionsList);
   }
 
   @override
   Future<List<SK2TransactionMessage>> unfinishedTransactions() {
-    return Future<List<SK2TransactionMessage>>.value(<SK2TransactionMessage>[
-      SK2TransactionMessage(
-        id: 123,
-        originalId: 123,
-        productId: 'product_id',
-        purchaseDate: '12-12',
-        receiptData: 'fake_jws_representation',
-        appAccountToken: 'fake_app_account_token',
-        status: SK2PurchaseStatusMessage.purchased,
-      ),
-    ]);
+    return Future<List<SK2TransactionMessage>>.value(unfinishedTransactionsList);
+  }
+
+  @override
+  Future<List<SK2TransactionMessage>> currentEntitlements() {
+    return Future<List<SK2TransactionMessage>>.value(currentEntitlementsList);
   }
 
   @override
@@ -522,6 +551,12 @@ class FakeStoreKit2Platform implements InAppPurchase2API {
   }
 
   @override
+  Future<List<String>> subscriptionRenewalInfo(String productId) async {
+    await willAutoRenew(productId);
+    return renewalInfoProducts[productId] ?? <String>[];
+  }
+
+  @override
   Future<bool> willAutoRenew(String productId) async {
     if (!validProductIDs.contains(productId)) {
       throw PlatformException(
@@ -540,11 +575,6 @@ class FakeStoreKit2Platform implements InAppPurchase2API {
     }
 
     return autoRenewProducts[productId] ?? false;
-  }
-
-  @override
-  Future<void> showManageSubscriptions() {
-    return Future<void>.value();
   }
 
   @override
@@ -578,6 +608,11 @@ class FakeStoreKit2Platform implements InAppPurchase2API {
 
   @override
   Future<void> presentOfferCodeRedeemSheet() async {}
+
+  @override
+  Future<void> showManageSubscriptions() async {
+    showManageSubscriptionsCallCount++;
+  }
 }
 
 SK2TransactionMessage createPendingTransaction(String id, {int quantity = 1}) {
@@ -585,7 +620,7 @@ SK2TransactionMessage createPendingTransaction(String id, {int quantity = 1}) {
     id: 1,
     originalId: 2,
     productId: id,
-    purchaseDate: 'purchaseDate',
+    purchaseDate: 123123.121,
     appAccountToken: 'appAccountToken',
     receiptData: 'receiptData',
     jsonRepresentation: 'jsonRepresentation',

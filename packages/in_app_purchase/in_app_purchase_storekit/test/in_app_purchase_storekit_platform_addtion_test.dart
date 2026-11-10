@@ -13,14 +13,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   final fakeStoreKitPlatform = FakeStoreKitPlatform();
-  final fakeStoreKit2Platform = FakeStoreKit2Platform();
 
   setUpAll(() {
-    setInAppPurchaseHostApis(api: fakeStoreKitPlatform, api2: fakeStoreKit2Platform);
-  });
-
-  setUp(() {
-    fakeStoreKit2Platform.reset();
+    setInAppPurchaseHostApis(api: fakeStoreKitPlatform);
   });
 
   group('present code redemption sheet', () {
@@ -44,12 +39,6 @@ void main() {
       expect(receiptData!.source, kIAPSource);
       expect(receiptData.localVerificationData, 'refreshed receipt data');
       expect(receiptData.serverVerificationData, 'refreshed receipt data');
-    });
-  });
-
-  group('showManageSubscriptions', () {
-    test('should complete without error', () async {
-      expect(InAppPurchaseStoreKitPlatformAddition().showManageSubscriptions(), completes);
     });
   });
 }

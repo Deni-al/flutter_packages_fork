@@ -44,9 +44,13 @@ class SK2Transaction {
 
   /// The date that the App Store charged the user's account for a purchased or
   /// restored product, or for a subscription purchase or renewal after a lapse.
+  ///
+  /// Milliseconds since epoch.
   final String purchaseDate;
 
   /// The date the subscription expires or renews.
+  ///
+  /// Milliseconds since epoch.
   final String? expirationDate;
 
   /// The number of consumable products purchased.
@@ -101,6 +105,17 @@ class SK2Transaction {
     return transactions;
   }
 
+  /// A wrapper around [Transaction.currentEntitlements]
+  /// https://developer.apple.com/documentation/storekit/transaction/currententitlements
+  /// A sequence that emits the latest transaction for each product the customer is currently entitled to.
+  static Future<List<SK2Transaction>> currentEntitlements() async {
+    final List<SK2TransactionMessage> msgs = await hostApi2.currentEntitlements();
+    final List<SK2Transaction> transactions = msgs
+        .map((SK2TransactionMessage e) => e.convertFromPigeon())
+        .toList();
+    return transactions;
+  }
+
   /// Start listening to transactions.
   /// Call this as soon as you can your app to avoid missing transactions.
   static void startListeningToTransactions() {
@@ -124,8 +139,9 @@ extension on SK2TransactionMessage {
       id: id.toString(),
       originalId: originalId.toString(),
       productId: productId,
-      purchaseDate: purchaseDate ?? '',
-      expirationDate: expirationDate,
+      purchaseDate: _secondsToMillisecondsSinceEpochString(purchaseDate) ?? '',
+      expirationDate: _secondsToMillisecondsSinceEpochString(expirationDate),
+      quantity: purchasedQuantity,
       appAccountToken: appAccountToken,
       receiptData: receiptData,
       jsonRepresentation: jsonRepresentation,
@@ -153,12 +169,17 @@ extension on SK2TransactionMessage {
         serverVerificationData: receiptData ?? '',
         source: kIAPSource,
       ),
-      transactionDate: purchaseDate,
+      transactionDate: _secondsToMillisecondsSinceEpochString(purchaseDate),
       status: purchaseStatus,
       purchaseID: id > 0 ? id.toString() : null,
       appAccountToken: appAccountToken,
+      expirationDate: _secondsToMillisecondsSinceEpochString(expirationDate),
+      sk2Transaction: id > 0 ? convertFromPigeon() : null,
     );
   }
+
+  String? _secondsToMillisecondsSinceEpochString(double? date) =>
+      date != null ? (date * 1000).round().toString() : null;
 }
 
 /// An observer that listens to all transactions created

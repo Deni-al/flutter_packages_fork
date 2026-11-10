@@ -27,11 +27,21 @@ final class AppStore {
     return hostApi2.presentOfferCodeRedeemSheet();
   }
 
-  /// Dart wrapper for StoreKit2's showManageSubscriptions()
-  /// Opens the subscription management sheet for the user.
+  /// Dart wrapper for StoreKit2's showManageSubscriptions(in:)
+  /// Presents the App Store sheet that lets users manage their subscriptions.
   /// https://developer.apple.com/documentation/storekit/appstore/showmanagesubscriptions(in:)
   Future<void> showManageSubscriptions() {
     return hostApi2.showManageSubscriptions();
+  }
+
+  /// Returns verified renewal-info JSON for the product's subscription group.
+  ///
+  /// Match `originalTransactionId` to the customer's transaction before use.
+  /// `renewalPrice` is in milliunits of `currency`; optional fields may be absent.
+  /// Returns an empty list when the group has no subscription status.
+  /// Throws a platform exception when fetching or verification fails.
+  Future<List<String>> subscriptionRenewalInfo(String productId) {
+    return hostApi2.subscriptionRenewalInfo(productId);
   }
 
   /// Checks if the specified subscription will auto-renew at the end of the current billing period.
